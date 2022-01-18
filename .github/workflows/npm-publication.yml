@@ -1,5 +1,7 @@
 name: NPM Publication
 on: push
+  branches:
+    - master
 
 jobs:
   publish:
