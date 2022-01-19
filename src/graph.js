@@ -7,23 +7,20 @@ import { Mission } from './mission.js'
 import { Jurisdiction } from './jurisdiction.js'
 import { TradeAgreement } from './trade-agreement.js' 
 
-const phonebook = new Map(); // for lookups by geo_id / wikidata ID
+export const phonebook = new Map(); // for lookups by geo_id / wikidata ID
 
 // create false "jurisdiction"s for the earth and the asia pacific
+export const asia = new Jurisdiction({
+	geo_id: -1,
+	wikidata: 'Q1070940',
+	name: {en:'Asia Pacific'},
+	type: {label:{en:'region'}}
+})
 const earth = new Jurisdiction({
 	geo_id: 0,
 	name: { en: 'Earth' },
 	wikidata:'Q2',
-	type:'Planet',
-	phonebook
-})
-phonebook.set('Q2',earth)
-export const asia = new Jurisdiction({
-	geo_id: 0,
-	wikidata: 'Q1070940',
-	name: {en:'Asia Pacific'},
-	type: {label:{en:'region'}},
-	phonebook
+	type:'Planet'
 })
 
 const jurtree = json(graphAPI).then(buildHierarchy)
@@ -41,12 +38,8 @@ function buildHierarchy(data){
 			bizCount: jurdata?.bc,
 			investments: jurdata?.i,
 			x: jurdata?.x,
-			y: jurdata?.y,
-			phonebook
+			y: jurdata?.y
 		})
-		// create a dict for quick lookups by geo_id and wikidata
-		phonebook.set(Jur.geo_id,Jur) 
-		phonebook.set(Jur.wikidata,Jur)
 		return Jur
 	} ).map( Jur => {
 		Jur.findRelations()

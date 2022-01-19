@@ -4,17 +4,19 @@ import { geometry as geoAPI } from './API.js'
 import { Node } from './node.js'
 import { Mission } from './mission.js'
 import { sqkm } from './sqkm.js'
+import { phonebook } from './graph.js'
 
 export class Jurisdiction {
 	constructor({
 		geo_id,wikidata,osm_id,
 		parent,name,type,capital,x,y,
-		bizCount,investments,
-		phonebook
+		bizCount,investments
 	}){
 		this.geo_id = geo_id
 		this.wikidata = wikidata
 		this.osm_id = osm_id
+		phonebook.set(this.geo_id,this) 
+		phonebook.set(this.wikidata,this)
 		this.name = name
 		this.type = { label: { en: type } }
 		this._parent_geo_id = parent 
