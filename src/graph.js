@@ -33,6 +33,7 @@ function buildHierarchy(data){
 		let Jur = new Jurisdiction({
 			geo_id: jurdata.g, 
 			wikidata: `Q${jurdata.q}`,
+			osm_id: jurdata.o,
 			parent: jurdata?.p,
 			name: { en: jurdata.n },
 			type: data.types.find(type=>jurdata.t==type.uid).label,

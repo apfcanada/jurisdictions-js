@@ -7,10 +7,14 @@ import { sqkm } from './sqkm.js'
 
 export class Jurisdiction {
 	constructor({
-		geo_id,wikidata,parent,name,type,capital,bizCount,investments,phonebook,x,y
+		geo_id,wikidata,osm_id,
+		parent,name,type,capital,x,y,
+		bizCount,investments,
+		phonebook
 	}){
 		this.geo_id = geo_id
 		this.wikidata = wikidata
+		this.osm_id = osm_id
 		this.name = name
 		this.type = { label: { en: type } }
 		this._parent_geo_id = parent 
