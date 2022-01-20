@@ -1,9 +1,7 @@
 import { json } from 'd3-fetch'
-import { geoCentroid } from 'd3-geo'
 import { geometry as geoAPI } from './API.js'
 import { Node } from './node.js'
 import { Mission } from './mission.js'
-import { sqkm } from './sqkm.js'
 import { phonebook } from './graph.js'
 
 export class Jurisdiction {
@@ -222,8 +220,7 @@ export class Jurisdiction {
 		return this.geom?.polygon ?? this.geom?.point
 	}
 	get latlon(){
-		if(this.geom?.point) return this.geom.point.coordinates;
-		return geoCentroid(this.boundary)
+		return this?.geom?.point?.coordinates
 	}
 	setGeometry(geometry){
 		if(geometry?.type == 'Point'){
@@ -235,14 +232,6 @@ export class Jurisdiction {
 		}
 		this.queryStatus.boundary = 2
 		delete this._boundaryPromise
-	}
-	get sqkm(){ // area of boundary geom in square kilometers
-		if( (!this._sqkm) && this.geom?.polygon ){
-			this._sqkm = sqkm(this.geom.polygon)
-		}else if(this.geom?.point){
-			return 10 // a wild and unfounded assumption 
-		}
-		return this._sqkm
 	}
 	get children(){
 		return [...this._children]
@@ -275,8 +264,5 @@ export class Jurisdiction {
 			this.queryStatus.boundary = 1 // sent but not received
 			return this._boundaryPromise
 		}
-	}
-	get populationDensity(){
-		return this.population / this.sqkm
 	}
 }
