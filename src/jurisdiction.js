@@ -1,4 +1,3 @@
-import { json } from 'd3-fetch'
 import { geoCentroid } from 'd3-geo'
 import { geometry as geoAPI } from './API.js'
 import { Node } from './node.js'

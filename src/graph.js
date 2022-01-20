@@ -1,5 +1,4 @@
 import { graph as graphAPI, investment as investmentAPI } from './API.js'
-import { json } from 'd3-fetch'
 import twinsData from './twinning-data.json'
 import tradeAgreements from './canada-trade-agreements.json'
 import dipMissions from './missions.json'
