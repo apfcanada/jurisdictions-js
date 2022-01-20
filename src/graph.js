@@ -12,7 +12,7 @@ export class JurisdictionGraph{
 		this.lookupNow = this.lookupNow.bind(this)
 		this.phonebook = new Map();
 		if(data){
-			this.ready = new Promise( buildHierarchy(data,this.phonebook,this) )
+			this.ready = Promise.resolve(buildHierarchy(data,this.phonebook,this) )
 		}else{
 			this.ready = fetch(API).then(r=>r.json()).then( data => {
 				buildHierarchy(data,this.phonebook,this)
