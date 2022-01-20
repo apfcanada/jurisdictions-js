@@ -1,7 +1,6 @@
 import { geometry as geoAPI } from './API.js'
 import { Node } from './node.js'
 import { Mission } from './mission.js'
-import { phonebook } from './graph.js'
 
 export class Jurisdiction {
 	constructor({
@@ -12,13 +11,10 @@ export class Jurisdiction {
 		this.geo_id = geo_id
 		this.wikidata = wikidata
 		this.osm_id = osm_id
-		phonebook.set(this.geo_id,this) 
-		phonebook.set(this.wikidata,this)
 		this.name = name
 		this.type = { label: { en: type } }
 		this._parent_geo_id = parent 
 		this._capitalQid = capital
-		this._phonebook = phonebook
 		this.geom = {}
 		if( x && y ) this.geom.point = { type: 'POINT', coordinates: [x,y] }
 		this._twins = new Set()
@@ -34,21 +30,6 @@ export class Jurisdiction {
 		// record query status to prevent retries 0: none, 1: in progress, 2: done 
 		this.queryStatus = { neighbors: 0, population: 0, boundary: 0 }
 	}
-	// id can/should be either a wikidataID or a geo_id, either number or string
-	lookup(id){
-		if( id instanceof Jurisdiction ) return id;
-		let fellowJur
-		if( typeof id == 'number' && Number.isInteger(id) ){
-			fellowJur = this._phonebook.get(id)
-		}else if( typeof id == 'string' && /^\d+$/.test(id) ) {  
-			fellowJur = this._phonebook.get(Number(id))
-		}else if( typeof id == 'string' && /^Q\d+$/.test(id) ){
-			fellowJur = this._phonebook.get(id)
-		}else{
-			throw new Error(`${id} (${typeof id}) is not an accepted jur ID`)
-		}
-		return fellowJur
-	}
 	get siblings(){
 		let family = new Set(
 			// child of earth (Q2) if no parent
@@ -57,19 +38,19 @@ export class Jurisdiction {
 		family.delete(this)
 		return [...family]
 	}
-	findRelations(){ // called once phonebook is ready
+	findRelations(lookup){ // called once phonebook is ready
 		if(this._parent_geo_id){
-			this.parent = this.lookup(this._parent_geo_id)
+			this.parent = lookup(this._parent_geo_id)
 			delete this._parent_geo_id
 			this.parent.acceptChild(this)
 		}
 		if(this._capitalQid){
-			this.capital = this.lookup(this._capitalQid)
+			this.capital = lookup(this._capitalQid)
 			delete this._capitalQid
 			this.capital.administer(this)
 		}
 		this.investments.map( dst_geo_id => {
-			this.investIn( this.lookup(dst_geo_id) )
+			this.investIn( lookup(dst_geo_id) )
 		} )
 		delete this.investments
 	}

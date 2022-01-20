@@ -1,4 +1,4 @@
-import { graph as graphAPI, investment as investmentAPI } from './API.js'
+import { graph as API } from './API.js'
 import twinsData from './twinning-data.json'
 import tradeAgreements from './canada-trade-agreements.json'
 import dipMissions from './missions.json'
@@ -6,7 +6,58 @@ import { Mission } from './mission.js'
 import { Jurisdiction } from './jurisdiction.js'
 import { TradeAgreement } from './trade-agreement.js' 
 
-export const phonebook = new Map(); // for lookups by geo_id / wikidata ID
+export class JurisdictionGraph{
+	constructor(data){
+		this.lookup = this.lookup.bind(this)
+		this.lookupNow = this.lookupNow.bind(this)
+		this.phonebook = new Map();
+		if(data){
+			this.ready = new Promise( buildHierarchy(data,this.phonebook,this) )
+		}else{
+			this.ready = fetch(API).then(r=>r.json()).then( data => {
+				buildHierarchy(data,this.phonebook,this)
+			} )
+		}
+	}
+	// id can/should be either a wikidataID (string) or a geo_id (number)
+	async lookup(id){
+		await this.ready;
+		return this.lookupNow(id);
+	}
+	lookupNow(id){
+		if( id instanceof Jurisdiction ) return id;
+		let fellowJur
+		if( typeof id == 'number' && Number.isInteger(id) ){
+			fellowJur = this.phonebook.get(id)
+		}else if( typeof id == 'string' && /^\d+$/.test(id) ) {  
+			fellowJur = this.phonebook.get(Number(id))
+		}else if( typeof id == 'string' && /^Q\d+$/.test(id) ){
+			fellowJur = this.phonebook.get(id)
+		}else{
+			throw new Error(`${id} (${typeof id}) is not an accepted jur ID`)
+		}
+		return fellowJur	
+	}
+	async selves(ids){
+		await this.ready;
+		return [...new Set(ids.map( id => this.lookupNow(id)))]
+			.filter( jur => jur instanceof Jurisdiction )
+	}
+	async countries(){
+		await this.ready;
+		return earth.children
+	}
+	async terra(){
+		await this.ready;
+		return earth
+	}
+	async canada(){
+		await this.ready;
+		return this.lookupNow(2)
+	}
+	
+}
+
 
 // create false "jurisdiction"s for the earth and the asia pacific
 export const asia = new Jurisdiction({
@@ -15,16 +66,14 @@ export const asia = new Jurisdiction({
 	name: {en:'Asia Pacific'},
 	type: {label:{en:'region'}}
 })
-const earth = new Jurisdiction({
+export const earth = new Jurisdiction({
 	geo_id: 0,
 	name: { en: 'Earth' },
 	wikidata:'Q2',
 	type:'Planet'
 })
 
-const jurtree = json(graphAPI).then(buildHierarchy)
-
-function buildHierarchy(data){
+function buildHierarchy(data,phonebook,graph){
 	data.jurisdictions.map( jurdata => {
 		let Jur = new Jurisdiction({
 			geo_id: jurdata.g, 
@@ -39,9 +88,11 @@ function buildHierarchy(data){
 			x: jurdata?.x,
 			y: jurdata?.y
 		})
+		phonebook.set(Jur.geo_id,Jur) 
+		phonebook.set(Jur.wikidata,Jur)
 		return Jur
 	} ).map( Jur => {
-		Jur.findRelations()
+		Jur.findRelations(graph.lookupNow)
 		if(!Jur.parent){ 
 			earth.acceptChild(Jur) 
 			if(!Jur.canadian) asia.acceptChild(Jur)
@@ -49,24 +100,24 @@ function buildHierarchy(data){
 	} )
 	twinsData.map( pair => {
 		try{
-			let A = earth.lookup(pair.a)
-			let B = earth.lookup(pair.b)
+			let A = graph.lookupNow(pair.a)
+			let B = graph.lookupNow(pair.b)
 			A.twinWith(B)
 		}catch(err){
 			console.warn('failed to find one or more of these twins:',pair)
 		}
 	} )
-	let canada = earth.lookup(2)
+	let canada = graph.lookupNow(2)
 	tradeAgreements.map( agreement => {
 		let { signatories, ...data } = agreement 
-		let jurs = signatories.split(',').map(qid=>earth.lookup(qid)).filter(j=>j)
+		let jurs = signatories.split(',').map(qid=>graph.lookupNow(qid)).filter(j=>j)
 		if(jurs.length < 2) return;
 		let theAgreement = new TradeAgreement(data,...jurs)
 		jurs.map( jur => jur.signTradeAgreement(theAgreement) )
 	} )
 	dipMissions.map( missionData => {
-		let operator = earth.lookup(missionData.operatorID)
-		let destination = earth.lookup(missionData.destID)
+		let operator = graph.lookupNow(missionData.operatorID)
+		let destination = graph.lookupNow(missionData.destID)
 		if(! operator || ! destination ){
 			return console.warn( `Mission ${missionData.missionID} missing at least one of these jurisdictions`,
 				missionData.operatorID, missionData.destID )
@@ -76,32 +127,4 @@ function buildHierarchy(data){
 		destination.receiveMission(mission)
 	} )
 	return phonebook
-}
-
-export async function self(id){
-	return jurtree.then( phonebook => earth.lookup(id) )
-}
-
-export async function selves(ids){
-	return jurtree.then( phonebook => {
-		return [...new Set(ids.map( id => earth.lookup(id)))].filter(j=>j)
-	} )
-}
-
-export async function context(id){
-	// if no parent then Earth is the parent
-	return self(id)
-		.then( jur => jur?.parent ? jur.parent.children : earth.children )
-}
-
-export async function countries(){
-	return jurtree.then( phonebook => earth.children )
-}
-
-export async function terra(){
-	return jurtree.then( phonebook => earth )
-}
-
-export async function canada(){
-	return self(2)
 }
