@@ -22,10 +22,7 @@
     "url": "https://github.com/apfcanada/jurisdictions-js/issues"
   },
   "homepage": "https://github.com/apfcanada/jurisdictions-js#readme",
-  "dependencies": {
-    "d3-fetch": "^3.0.1",
-    "d3-geo": "^3.0.1"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@babel/core": "^7.16.10",
     "@babel/preset-env": "^7.16.11",
