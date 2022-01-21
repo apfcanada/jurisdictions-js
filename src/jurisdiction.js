@@ -97,6 +97,10 @@ export class Jurisdiction {
 	}
 	acceptChild(child){
 		this._children.add(child)
+		child.setParent(this)
+	}
+	setParent(parent){
+		if(!this.parent) this.parent = parent
 	}
 	administer(jur){
 		this.administers = jur
