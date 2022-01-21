@@ -6,14 +6,14 @@ export class Jurisdiction {
 	constructor({
 		geo_id,wikidata,osm_id,
 		parent,name,type,capital,x,y,
-		bizCount,investments
+		bizCount,investments,graph
 	}){
 		this.geo_id = geo_id
 		this.wikidata = wikidata
 		this.osm_id = osm_id
 		this.name = name
 		this.type = { label: { en: type } }
-		this._parent_geo_id = parent 
+		if(parent){ this._parent_geo_id = parent } 
 		this._capitalQid = capital
 		this.geom = {}
 		if( x && y ) this.geom.point = { type: 'POINT', coordinates: [x,y] }
@@ -29,6 +29,13 @@ export class Jurisdiction {
 		this._directBusinessCount = bizCount ?? 0
 		// record query status to prevent retries 0: none, 1: in progress, 2: done 
 		this.queryStatus = { neighbors: 0, population: 0, boundary: 0 }
+		this.knownToGraphs = new Set();
+		if(graph){ this.useGraph(graph) }
+	}
+	useGraph(graph){
+		if(this.knownToGraphs.has(graph)) return; // already use it; skip
+		this.knownToGraphs.add(graph);
+		graph.know(this);
 	}
 	get siblings(){
 		let family = new Set(
@@ -38,7 +45,7 @@ export class Jurisdiction {
 		family.delete(this)
 		return [...family]
 	}
-	findRelations(lookup){ // called once phonebook is ready
+	findRelations(lookup){ // called once graph phonebook is ready
 		if(this._parent_geo_id){
 			this.parent = lookup(this._parent_geo_id)
 			delete this._parent_geo_id
@@ -95,12 +102,17 @@ export class Jurisdiction {
 			+ this.investmentPartners.size * 0.05
 		)
 	}
+	shareNetworks(jur){
+		[...this.knownToGraphs].map(g=>jur.useGraph(g))
+	}
 	acceptChild(child){
 		this._children.add(child)
 		child.setParent(this)
+		this.shareNetworks(child)
 	}
 	setParent(parent){
 		if(!this.parent) this.parent = parent
+		this.shareNetworks(parent)
 	}
 	administer(jur){
 		this.administers = jur

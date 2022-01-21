@@ -35,6 +35,11 @@ export class JurisdictionGraph{
 		}
 		return fellowJur	
 	}
+	know(jur){
+		if(this.phonebook.has(jur.geo_id)) return; // already known; skip
+		this.phonebook.set(jur.geo_id,jur)
+		this.phonebook.set(jur.wikidata,jur)
+	}
 	async selves(ids){
 		await this.ready;
 		return [...new Set(ids.map( id => this.lookupNow(id)))]
@@ -104,7 +109,8 @@ export const earth = new Jurisdiction({
 
 function buildHierarchy(data,phonebook,graph){
 	data.jurisdictions.map( jurdata => {
-		let Jur = new Jurisdiction({
+		return new Jurisdiction({
+			graph,
 			geo_id: jurdata.g, 
 			wikidata: `Q${jurdata.q}`,
 			osm_id: jurdata.o,
@@ -117,9 +123,6 @@ function buildHierarchy(data,phonebook,graph){
 			x: jurdata?.x,
 			y: jurdata?.y
 		})
-		phonebook.set(Jur.geo_id,Jur) 
-		phonebook.set(Jur.wikidata,Jur)
-		return Jur
 	} ).map( Jur => {
 		Jur.findRelations(graph.lookupNow)
 		if(!Jur.parent){ 

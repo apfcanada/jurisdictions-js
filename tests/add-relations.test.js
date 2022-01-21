@@ -16,10 +16,11 @@ test('Build minimal graph withour errors',() => {
 
 test('Add child jurisdiction',() => {
 	const graph = new JurisdictionGraph(sampleData);
-	const child = new Jurisdiction({geo_id:4,wikidata:'Q4',name:'E'})
+	const newChild = new Jurisdiction({geo_id:4,wikidata:'Q4',name:'E'})
 	const parent = graph.lookupNow('Q4')
 	expect(parent.children.length).toBe(0)
-	parent.acceptChild(child)
+	parent.acceptChild(newChild)
 	expect(parent.children.length).toBe(1)
-	expect(child.parent).toBe(parent)
+	expect(newChild.parent).toBe(parent)
+	expect(graph.lookupNow(newChild.geo_id)).toBeDefined()
 } )
