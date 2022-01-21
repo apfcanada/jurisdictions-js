@@ -1,7 +1,4 @@
 import { graph as API } from './API.js'
-import twinsData from './twinning-data.json'
-import tradeAgreements from './canada-trade-agreements.json'
-import dipMissions from './missions.json'
 import { Mission } from './mission.js'
 import { Jurisdiction } from './jurisdiction.js'
 import { TradeAgreement } from './trade-agreement.js' 
@@ -55,7 +52,39 @@ export class JurisdictionGraph{
 		await this.ready;
 		return this.lookupNow(2)
 	}
-	
+	addDiplomaticMissions(missionsData){
+		missionsData.map( missionData => {
+			let operator = this.lookupNow(missionData.operatorID)
+			let destination = this.lookupNow(missionData.destID)
+			if(! operator || ! destination ){
+				return console.warn( `Mission ${missionData.missionID} missing at least one of these jurisdictions`,
+					missionData.operatorID, missionData.destID )
+			}
+			let mission = new Mission({operator,destination,missionData})
+			operator.sendMission(mission)
+			destination.receiveMission(mission)
+		} )
+	}
+	addTwins(twinsData){
+		twinsData.map( pair => {
+			try{
+				let A = this.lookupNow(pair.a)
+				let B = this.lookupNow(pair.b)
+				A.twinWith(B)
+			}catch(err){
+				console.warn('failed to find one or more of these twins:',pair)
+			}
+		} )
+	}
+	addTradeAgreements(tradeAgreementData){
+		tradeAgreementData.map( agreement => {
+			let { signatories, ...data } = agreement 
+			let jurs = signatories.split(',').map(qid=>this.lookupNow(qid)).filter(j=>j)
+			if(jurs.length < 2) return;
+			let theAgreement = new TradeAgreement(data,...jurs)
+			jurs.map( jur => jur.signTradeAgreement(theAgreement) )
+		} )
+	}
 }
 
 
@@ -97,34 +126,6 @@ function buildHierarchy(data,phonebook,graph){
 			earth.acceptChild(Jur) 
 			if(!Jur.canadian) asia.acceptChild(Jur)
 		}
-	} )
-	twinsData.map( pair => {
-		try{
-			let A = graph.lookupNow(pair.a)
-			let B = graph.lookupNow(pair.b)
-			A.twinWith(B)
-		}catch(err){
-			console.warn('failed to find one or more of these twins:',pair)
-		}
-	} )
-	let canada = graph.lookupNow(2)
-	tradeAgreements.map( agreement => {
-		let { signatories, ...data } = agreement 
-		let jurs = signatories.split(',').map(qid=>graph.lookupNow(qid)).filter(j=>j)
-		if(jurs.length < 2) return;
-		let theAgreement = new TradeAgreement(data,...jurs)
-		jurs.map( jur => jur.signTradeAgreement(theAgreement) )
-	} )
-	dipMissions.map( missionData => {
-		let operator = graph.lookupNow(missionData.operatorID)
-		let destination = graph.lookupNow(missionData.destID)
-		if(! operator || ! destination ){
-			return console.warn( `Mission ${missionData.missionID} missing at least one of these jurisdictions`,
-				missionData.operatorID, missionData.destID )
-		}
-		let mission = new Mission({operator,destination,missionData})
-		operator.sendMission(mission)
-		destination.receiveMission(mission)
 	} )
 	return phonebook
 }
