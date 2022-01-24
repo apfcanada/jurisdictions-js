@@ -45,18 +45,15 @@ export class JurisdictionGraph{
 		this.phonebook.set(jur.geo_id,jur)
 		this.phonebook.set(jur.wikidata,jur)
 	}
-	async selves(ids){
+	async allJurisdictions(){
 		await this.ready;
-		return [...new Set(ids.map( id => this.lookupNow(id)))]
-			.filter( jur => jur instanceof Jurisdiction )
+		return [ ...new Set([...this.phonebook.values()]) ];
 	}
-	async countries(){
-		await this.ready;
-		return earth.children
+	async countries(){ // all parentless jurisdictions
+		return this.allJurisdictions().then( jurs => jurs.filter(j=>!j.parent) )
 	}
-	async terra(){
-		await this.ready;
-		return earth
+	async asianCountries(){
+		return this.countries().then(countries=>countries.filter(j=>j.geo_id!=2))
 	}
 	async canada(){
 		await this.ready;
@@ -103,22 +100,6 @@ export class JurisdictionGraph{
 	}
 }
 
-
-// create false Jurisdictions for the Earth and the Asia Pacific
-// these are distinguished by geo_id's < 1
-export const asia = new Jurisdiction({
-	geo_id: -1,
-	wikidata: 'Q1070940',
-	name: {en:'Asia Pacific'},
-	type: {label:{en:'region'}}
-})
-export const earth = new Jurisdiction({
-	geo_id: 0,
-	name: { en: 'Earth' },
-	wikidata:'Q2',
-	type:'Planet'
-})
-
 function buildHierarchy(data,phonebook,graph){
 	data.jurisdictions.map( jurdata => {
 		return new Jurisdiction({
@@ -135,12 +116,6 @@ function buildHierarchy(data,phonebook,graph){
 			x: jurdata?.x,
 			y: jurdata?.y
 		})
-	} ).map( Jur => {
-		Jur.findRelations(graph.lookupNow)
-		if(!Jur.parent){ 
-			earth.acceptChild(Jur) 
-			if(!Jur.canadian) asia.acceptChild(Jur)
-		}
-	} )
+	} ).map( jur => jur.findRelations(graph.lookupNow) )
 	return phonebook
 }

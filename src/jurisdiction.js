@@ -38,7 +38,7 @@ export class Jurisdiction {
 		graph.know(this);
 	}
 	get parent(){
-		return this._parent && this._parent.geo_id > 0 ? this._parent : undefined;
+		return this._parent;
 	}
 	get siblings(){
 		let family = new Set(

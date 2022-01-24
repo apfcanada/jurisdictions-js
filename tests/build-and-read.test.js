@@ -69,3 +69,27 @@ test('Count trade agreements with Hong Kong',() => {
 		expect(HK.directTradeAgreements.length).toBe(1)
 	} )
 } )
+
+test('Find all countries',()=>{
+	const graph = new JurisdictionGraph(staticData);
+	return graph.countries().then( countries => {
+		expect(countries.length).toBe(27)
+		const Canada = graph.lookupNow(2)
+		const China = graph.lookupNow(3)
+		const Toronto = graph.lookup(10)
+		expect(countries).not.toContain(Toronto)
+		expect(countries).toContain(China)
+		expect(countries).toContain(Canada)
+	} )
+})
+
+test('Find Asian countries',()=>{
+	const graph = new JurisdictionGraph(staticData);
+	return graph.asianCountries().then( countries => {
+		expect(countries.length).toBe(26)
+		const Canada = graph.lookupNow(2)
+		const China = graph.lookupNow(3)
+		expect(countries).toContain(China)
+		expect(countries).not.toContain(Canada)
+	} )
+})
