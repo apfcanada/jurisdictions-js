@@ -17,23 +17,27 @@ export class JurisdictionGraph{
 		}
 	}
 	// id can/should be either a wikidataID (string) or a geo_id (number)
-	async lookup(id){
+	// or an array of such
+	async lookup(input){
 		await this.ready;
-		return this.lookupNow(id);
+		return this.lookupNow(input);
 	}
-	lookupNow(id){
-		if( id instanceof Jurisdiction ) return id;
-		let fellowJur
-		if( typeof id == 'number' && Number.isInteger(id) ){
-			fellowJur = this.phonebook.get(id)
-		}else if( typeof id == 'string' && /^\d+$/.test(id) ) {  
-			fellowJur = this.phonebook.get(Number(id))
-		}else if( typeof id == 'string' && /^Q\d+$/.test(id) ){
-			fellowJur = this.phonebook.get(id)
-		}else{
-			throw new Error(`${id} (${typeof id}) is not an accepted jur ID`)
+	lookupNow(input){
+		if(input instanceof Array){
+			return input.map( val => this.lookupNow(val) )
 		}
-		return fellowJur	
+		if( input instanceof Jurisdiction ) return input;
+		if( typeof input == 'number' && Number.isInteger(input) ){
+			return this.phonebook.get(input)
+		}else if( typeof input == 'string'){
+			if(/^\d+$/.test(input) ) {  
+				return this.phonebook.get(Number(input))
+			}else if( /^Q\d+$/.test(input) ){
+				return this.phonebook.get(input)
+			}
+		}else{
+			throw new Error(`${input} (${typeof input}) is not an accepted jur ID`)
+		}
 	}
 	know(jur){
 		if(this.phonebook.has(jur.geo_id)) return; // already known; skip

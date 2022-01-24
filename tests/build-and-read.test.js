@@ -23,6 +23,16 @@ test('Find Toronto asynchronously',() => {
 	} )
 } )
 
+test('Find multiple jurisdictions',() => {
+	const graph = new JurisdictionGraph(staticData);
+	return graph.lookup([10,12,22,99999999]).then( jurs => {
+		expect(jurs instanceof Array).toBe(true)
+		expect(jurs[0].name.en).toBe('Toronto')
+		expect(jurs[2].name.en).toBe('Alberta')
+		expect(jurs[3]).toBeUndefined() // does not exist
+	} )
+} )
+
 test('Count twins in Hokkaido',() => {
 	const graph = new JurisdictionGraph(staticData);
 	graph.addTwins(twinsData)
