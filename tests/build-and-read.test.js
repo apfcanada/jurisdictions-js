@@ -56,7 +56,8 @@ test('Count missions from Quebec',() => {
 test('Count trade agreements with Hong Kong',() => {
 	const graph = new JurisdictionGraph(staticData);
 	graph.addTradeAgreements(tradeAgreements)
-	let HK = graph.lookupNow(30)
-	expect(HK.tradeAgreements.length).toBe(2)
-	expect(HK.directTradeAgreements.length).toBe(1)
+	return graph.lookup(30).then( HK => {
+		expect(HK.tradeAgreements.length).toBe(2)
+		expect(HK.directTradeAgreements.length).toBe(1)
+	} )
 } )

@@ -15,6 +15,7 @@ export class JurisdictionGraph{
 				buildHierarchy(data,this.phonebook,this)
 			} )
 		}
+		return this
 	}
 	// id can/should be either a wikidataID (string) or a geo_id (number)
 	// or an array of such
@@ -62,36 +63,42 @@ export class JurisdictionGraph{
 		return this.lookupNow(2)
 	}
 	addDiplomaticMissions(missionsData){
-		missionsData.map( missionData => {
-			let operator = this.lookupNow(missionData.operatorID)
-			let destination = this.lookupNow(missionData.destID)
-			if(! operator || ! destination ){
-				return console.warn( `Mission ${missionData.missionID} missing at least one of these jurisdictions`,
-					missionData.operatorID, missionData.destID )
-			}
-			let mission = new Mission({operator,destination,missionData})
-			operator.sendMission(mission)
-			destination.receiveMission(mission)
+		this.ready.then( blah => {
+			missionsData.map( missionData => {
+				let operator = this.lookupNow(missionData.operatorID)
+				let destination = this.lookupNow(missionData.destID)
+				if(! operator || ! destination ){
+					return console.warn( `Mission ${missionData.missionID} missing at least one of these jurisdictions`,
+						missionData.operatorID, missionData.destID )
+				}
+				let mission = new Mission({operator,destination,missionData})
+				operator.sendMission(mission)
+				destination.receiveMission(mission)
+			} )
 		} )
 	}
 	addTwins(twinsData){
-		twinsData.map( pair => {
-			try{
-				let A = this.lookupNow(pair.a)
-				let B = this.lookupNow(pair.b)
-				A.twinWith(B)
-			}catch(err){
-				console.warn('failed to find one or more of these twins:',pair)
-			}
+		this.ready.then( blah => {
+			twinsData.map( pair => {
+				try{
+					let A = this.lookupNow(pair.a)
+					let B = this.lookupNow(pair.b)
+					A.twinWith(B)
+				}catch(err){
+					console.warn('failed to find one or more of these twins:',pair)
+				}
+			} )
 		} )
 	}
 	addTradeAgreements(tradeAgreementData){
-		tradeAgreementData.map( agreement => {
-			let { signatories, ...data } = agreement 
-			let jurs = signatories.split(',').map(qid=>this.lookupNow(qid)).filter(j=>j)
-			if(jurs.length < 2) return;
-			let theAgreement = new TradeAgreement(data,...jurs)
-			jurs.map( jur => jur.signTradeAgreement(theAgreement) )
+		this.ready.then( blah => {
+			tradeAgreementData.map( agreement => {
+				let { signatories, ...data } = agreement 
+				let jurs = signatories.split(',').map(qid=>this.lookupNow(qid)).filter(j=>j)
+				if(jurs.length < 2) return;
+				let theAgreement = new TradeAgreement(data,...jurs)
+				jurs.map( jur => jur.signTradeAgreement(theAgreement) )
+			} )
 		} )
 	}
 }
