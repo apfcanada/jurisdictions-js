@@ -104,7 +104,8 @@ export class JurisdictionGraph{
 }
 
 
-// create false "jurisdiction"s for the earth and the asia pacific
+// create false Jurisdictions for the Earth and the Asia Pacific
+// these are distinguished by geo_id's < 1
 export const asia = new Jurisdiction({
 	geo_id: -1,
 	wikidata: 'Q1070940',
@@ -125,7 +126,7 @@ function buildHierarchy(data,phonebook,graph){
 			geo_id: jurdata.g, 
 			wikidata: `Q${jurdata.q}`,
 			osm_id: jurdata.o,
-			parent: jurdata?.p,
+			parent_geo_id: jurdata?.p,
 			name: { en: jurdata.n },
 			type: data.types.find(type=>jurdata.t==type.uid).label,
 			capital: jurdata?.c,

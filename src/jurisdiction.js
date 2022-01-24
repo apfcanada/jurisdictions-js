@@ -5,7 +5,7 @@ import { Mission } from './mission.js'
 export class Jurisdiction {
 	constructor({
 		geo_id,wikidata,osm_id,
-		parent,name,type,capital,x,y,
+		parent_geo_id,name,type,capital,x,y,
 		bizCount,investments,graph
 	}){
 		this.geo_id = geo_id
@@ -13,7 +13,7 @@ export class Jurisdiction {
 		this.osm_id = osm_id
 		this.name = name
 		this.type = { label: { en: type } }
-		if(parent){ this._parent_geo_id = parent } 
+		if(parent_geo_id){ this._parent_geo_id = parent_geo_id } 
 		this._capitalQid = capital
 		this.geom = {}
 		if( x && y ) this.geom.point = { type: 'POINT', coordinates: [x,y] }
@@ -37,6 +37,9 @@ export class Jurisdiction {
 		this.knownToGraphs.add(graph);
 		graph.know(this);
 	}
+	get parent(){
+		return this._parent && this._parent.geo_id > 0 ? this._parent : undefined;
+	}
 	get siblings(){
 		let family = new Set(
 			// child of earth (Q2) if no parent
@@ -47,9 +50,9 @@ export class Jurisdiction {
 	}
 	findRelations(lookup){ // called once graph phonebook is ready
 		if(this._parent_geo_id){
-			this.parent = lookup(this._parent_geo_id)
+			this._parent = lookup(this._parent_geo_id)
 			delete this._parent_geo_id
-			this.parent.acceptChild(this)
+			this._parent.acceptChild(this)
 		}
 		if(this._capitalQid){
 			this.capital = lookup(this._capitalQid)
@@ -111,7 +114,7 @@ export class Jurisdiction {
 		this.shareNetworks(child)
 	}
 	setParent(parent){
-		if(!this.parent) this.parent = parent
+		if(!this._parent) this._parent = parent
 		this.shareNetworks(parent)
 	}
 	administer(jur){

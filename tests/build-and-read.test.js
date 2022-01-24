@@ -15,6 +15,14 @@ test('Find Canada synchronously',() => {
 	expect(jur.name.en).toBe('Canada')
 } )
 
+test('Differentiate Canada from Asia',() => {
+	const graph = new JurisdictionGraph(staticData);
+	const Canada = graph.lookupNow(2)
+	expect(Canada.canadian).toBe(true)
+	const HK = graph.lookupNow(30)
+	expect(HK.canadian).toBe(false)
+} )
+
 test('Find Toronto asynchronously',() => {
 	const graph = new JurisdictionGraph(staticData);
 	return graph.lookup(10).then( jur => {
