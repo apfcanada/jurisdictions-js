@@ -219,7 +219,7 @@ export class Jurisdiction {
 		return this.geom?.polygon ?? this.geom?.point
 	}
 	get latlon(){
-		return this?.geom?.point?.coordinates
+		return this?.geom?.point?.coordinates ?? [undefined,undefined]
 	}
 	setGeometry(geometry){
 		if(geometry?.type == 'Point'){
@@ -255,7 +255,8 @@ export class Jurisdiction {
 			// request is in progress
 			if(this.queryStatus.boundary == 1) return this._boundaryPromise;
 			// request hasn't been made yet; queryStatus.boundary == 0
-			this._boundaryPromise = json(`${geoAPI}?geo_id=${this.geo_id}`)
+			this._boundaryPromise = fetch(`${geoAPI}?geo_id=${this.geo_id}`)
+				.then(response => response.json())
 				.then( data => {
 					this.setGeometry(data)
 					return this
