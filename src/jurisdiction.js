@@ -3,6 +3,7 @@ import { Node } from './node.js'
 import { Mission } from './mission.js'
 
 export class Jurisdiction {
+	#graph
 	constructor({
 		geo_id,wikidata,osm_id,
 		parent_geo_id,name,type,capital,x,y,
@@ -30,11 +31,16 @@ export class Jurisdiction {
 		// record query status to prevent retries 0: none, 1: in progress, 2: done 
 		this.queryStatus = { neighbors: 0, population: 0, boundary: 0 }
 		this.knownToGraphs = new Set();
-		if(graph){ this.useGraph(graph) }
+		if(graph){ 
+			this.#graph = graph
+			graph.know(this)
+		}else{
+			console.log('no graph passed')
+		}
 	}
 	useGraph(graph){
-		if(this.knownToGraphs.has(graph)) return; // already use it; skip
-		this.knownToGraphs.add(graph);
+		if( this.#graph == graph ) return;
+		this.#graph = graph;
 		graph.know(this);
 	}
 	get parent(){
@@ -43,7 +49,7 @@ export class Jurisdiction {
 	get siblings(){
 		let family = new Set(
 			// child of earth (Q2) if no parent
-			this.parent ? this.parent.children : this.lookup('Q2').children
+			this.parent ? this.parent.children : this.#graph.countriesNow
 		)
 		family.delete(this)
 		return [...family]
@@ -106,7 +112,7 @@ export class Jurisdiction {
 		)
 	}
 	shareNetworks(jur){
-		[...this.knownToGraphs].map(g=>jur.useGraph(g))
+		if(this.#graph) jur.useGraph(this.#graph)
 	}
 	acceptChild(child){
 		this._children.add(child)

@@ -45,12 +45,19 @@ export class JurisdictionGraph{
 		this.phonebook.set(jur.geo_id,jur)
 		this.phonebook.set(jur.wikidata,jur)
 	}
-	async allJurisdictions(){
-		await this.ready;
+	get allJurisdictionsNow(){
 		return [ ...new Set([...this.phonebook.values()]) ];
 	}
+	async allJurisdictions(){
+		await this.ready;
+		return this.allJurisdictionsNow
+	}
+	get countriesNow(){
+		return this.allJurisdictionsNow.filter(j=>!j.parent)
+	}
 	async countries(){ // all parentless jurisdictions
-		return this.allJurisdictions().then( jurs => jurs.filter(j=>!j.parent) )
+		await this.ready;
+		return this.countriesNow
 	}
 	async asianCountries(){
 		return this.countries().then(countries=>countries.filter(j=>j.geo_id!=2))

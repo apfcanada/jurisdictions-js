@@ -93,3 +93,13 @@ test('Find Asian countries',()=>{
 		expect(countries).not.toContain(Canada)
 	} )
 })
+
+test('Find siblings',() => {
+	const graph = new JurisdictionGraph(staticData);
+	return graph.lookup([2,3,10,9]).then( ([canada,china,toronto,ontario]) => {
+		expect(canada.siblings).toContain(china)
+		expect(china.siblings).toContain(canada)
+		expect(canada.siblings).not.toContain(canada)
+		expect(toronto.siblings.length).toBe(ontario.children.length-1)
+	} )
+})
