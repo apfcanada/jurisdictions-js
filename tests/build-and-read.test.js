@@ -111,3 +111,12 @@ test('Find siblings',() => {
 		expect(toronto.siblings.length).toBe(ontario.children.length-1)
 	} )
 })
+
+test('IDs are read-only',() => {
+	const graph = new JurisdictionGraph(staticData);
+	return graph.lookup(2).then( canada => {
+		expect(()=>canada.geo_id+=1).toThrow(TypeError)
+		expect(()=>canada.wikidata='Q1').toThrow(TypeError)
+		expect(()=>canada.osm_id='r1').toThrow(TypeError)
+	} )
+})

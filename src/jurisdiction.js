@@ -3,8 +3,8 @@ import { Node } from './node.js'
 import { Mission } from './mission.js'
 
 export class Jurisdiction {
+	#ids = { relations: {} }
 	#graph
-	#relation_ids = {} // for looking up relations once all data is read in
 	#parent
 	#twins = new Set();
 	#children = new Set();
@@ -18,13 +18,16 @@ export class Jurisdiction {
 		if( parseInt(geo_id) !== geo_id || ( ! /^Q\d+$/.test(wikidata) ) ){ 
 			throw 'error in one of the required inputs' 
 		}
-		this.geo_id = geo_id
-		this.wikidata = wikidata
-		this.osm_id = osm_id
+		this.#ids.geo_id = geo_id
+		this.#ids.wikidata = wikidata
+		this.#ids.osm = osm_id
+		
 		this.name = name
 		this.type = { label: { en: type } }
-		if(parent_geo_id) this.#relation_ids.parent = parent_geo_id; 
-		if(capital) this.#relation_ids.capital = capital;
+		
+		if(parent_geo_id) this.#ids.relations.parent = parent_geo_id; 
+		if(capital) this.#ids.relations.capital = capital;
+
 		this.geom = {}
 		if( x && y ) this.geom.point = { type: 'POINT', coordinates: [x,y] }
 		this.investments = investments ?? [] // unsets once phonebook is ready
@@ -40,27 +43,32 @@ export class Jurisdiction {
 			graph.know(this)
 		}
 	}
+	// read-only properties
+	get geo_id(){ return this.#ids.geo_id }
+	get wikidata(){ return this.#ids.wikidata }
+	get osm_id(){ return this.#ids.osm }
+	get parent(){ return this.#parent }
+
 	useGraph(graph){
 		if( this.#graph == graph ) return;
 		this.#graph = graph;
 		graph.know(this);
 	}
-	get parent(){ return this.#parent }
 	get siblings(){
 		let family = new Set(
-			// child of earth (Q2) if no parent
+			// if no parent, siblings are other parentless jurs
 			this.parent ? this.parent.children : this.#graph.countriesNow
 		)
 		family.delete(this)
 		return [...family]
 	}
 	findRelations(lookup){ // called once graph phonebook is ready
-		if(this.#relation_ids?.parent){
-			this.#parent = lookup(this.#relation_ids.parent)
+		if(this.#ids.relations?.parent){
+			this.#parent = lookup(this.#ids.relations.parent)
 			this.#parent.acceptChild(this)
 		}
-		if(this.#relation_ids?.capital){
-			this.capital = lookup(this.#relation_ids.capital)
+		if(this.#ids.relations?.capital){
+			this.capital = lookup(this.#ids.relations.capital)
 			this.capital.administer(this)
 		}
 		this.investments.map( dst_geo_id => {
