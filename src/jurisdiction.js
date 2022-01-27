@@ -4,29 +4,35 @@ import { Mission } from './mission.js'
 
 export class Jurisdiction {
 	#ids = { relations: {} }
+	#names = { } // keyed by language code, e.g. 'en','zh','zh_classical'
 	#graph
 	#parent
 	#twins = new Set();
 	#children = new Set();
 	#missions = { sends: new Set(), receives: new Set() }
 	constructor({
-		geo_id,wikidata,osm_id,
-		parent_geo_id,name,type,capital,x,y,
+		geo_id,wikidata,osm_id,parent_id,capital_id,
+		names,type,x,y,
 		bizCount,investments,graph
 	}){
 		// only two strictly required fields
 		if( parseInt(geo_id) !== geo_id || ( ! /^Q\d+$/.test(wikidata) ) ){ 
 			throw 'error in one of the required inputs' 
 		}
+		// set IDs
 		this.#ids.geo_id = geo_id
 		this.#ids.wikidata = wikidata
 		this.#ids.osm = osm_id
+		if(parent_id) this.#ids.relations.parent = parent_id; 
+		if(capital_id) this.#ids.relations.capital = capital_id;
 		
-		this.name = name
+		Object.entries( names ?? {} ).map( ( [ key, name ] ) => {
+			if( /^[a-z]{2}$/.test(key) && typeof name == 'string' ){
+				this.#names[key] = name
+			}
+		} )
+
 		this.type = { label: { en: type } }
-		
-		if(parent_geo_id) this.#ids.relations.parent = parent_geo_id; 
-		if(capital) this.#ids.relations.capital = capital;
 
 		this.geom = {}
 		if( x && y ) this.geom.point = { type: 'POINT', coordinates: [x,y] }
@@ -48,6 +54,7 @@ export class Jurisdiction {
 	get wikidata(){ return this.#ids.wikidata }
 	get osm_id(){ return this.#ids.osm }
 	get parent(){ return this.#parent }
+	get name(){ return this.#names }
 
 	useGraph(graph){
 		if( this.#graph == graph ) return;
