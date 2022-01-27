@@ -14,6 +14,10 @@ export class Jurisdiction {
 		parent_geo_id,name,type,capital,x,y,
 		bizCount,investments,graph
 	}){
+		// only two strictly required fields
+		if( parseInt(geo_id) !== geo_id || ( ! /^Q\d+$/.test(wikidata) ) ){ 
+			throw 'error in one of the required inputs' 
+		}
 		this.geo_id = geo_id
 		this.wikidata = wikidata
 		this.osm_id = osm_id
