@@ -50,14 +50,22 @@ test('Count twins in Hokkaido',() => {
 	} )
 } )
 
-test('Count missions from Quebec',() => {
+test('Find capitals',() => {
+	const graph = new JurisdictionGraph(staticData);
+	return graph.lookup([2,9]).then( ([canada,ontario]) => {
+		expect(canada.capital.name.en).toBe('Ottawa')
+		expect(ontario.capital.name.en).toBe('Toronto')
+	} )
+} )
+
+test('Count missions from/to Quebec',() => {
 	const graph = new JurisdictionGraph(staticData);
 	expect(graph.lookupNow(18).sendsMissions.length).toBe(0)
 	graph.addDiplomaticMissions(dipMissions)
-	return graph.lookup('18').then( jur => {
-		expect(jur instanceof Jurisdiction).toBe(true)
-		expect(jur.hasDiplomacy).toBe(true)
-		expect(jur.sendsMissions.length).toBe(9)
+	return graph.lookup('18').then( quebec => {
+		expect(quebec.hasDiplomacy).toBe(true)
+		expect(quebec.sendsMissions.length).toBe(9)
+		expect(quebec.receivesMissions.length).toBe(1)
 	} )
 } )
 

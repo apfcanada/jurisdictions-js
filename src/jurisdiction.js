@@ -4,6 +4,11 @@ import { Mission } from './mission.js'
 
 export class Jurisdiction {
 	#graph
+	#relation_ids = {} // for looking up relations once all data is read in
+	#parent
+	#twins = new Set();
+	#children = new Set();
+	#missions = { sends: new Set(), receives: new Set() }
 	constructor({
 		geo_id,wikidata,osm_id,
 		parent_geo_id,name,type,capital,x,y,
@@ -14,28 +19,21 @@ export class Jurisdiction {
 		this.osm_id = osm_id
 		this.name = name
 		this.type = { label: { en: type } }
-		if(parent_geo_id){ this._parent_geo_id = parent_geo_id } 
-		this._capitalQid = capital
+		if(parent_geo_id) this.#relation_ids.parent = parent_geo_id; 
+		if(capital) this.#relation_ids.capital = capital;
 		this.geom = {}
 		if( x && y ) this.geom.point = { type: 'POINT', coordinates: [x,y] }
-		this._twins = new Set()
-		this._children = new Set()
 		this.investments = investments ?? [] // unsets once phonebook is ready
 		this._investsIn = new Set();
 		this._hasInvestmentFrom = new Set();
 		this._borders = new Set()
 		this._directTradeAgreements = new Set()
-		this._sendsMissions = new Set()
-		this._receivesMissions = new Set()
 		this._directBusinessCount = bizCount ?? 0
 		// record query status to prevent retries 0: none, 1: in progress, 2: done 
 		this.queryStatus = { neighbors: 0, population: 0, boundary: 0 }
-		this.knownToGraphs = new Set();
 		if(graph){ 
 			this.#graph = graph
 			graph.know(this)
-		}else{
-			console.log('no graph passed')
 		}
 	}
 	useGraph(graph){
@@ -43,9 +41,7 @@ export class Jurisdiction {
 		this.#graph = graph;
 		graph.know(this);
 	}
-	get parent(){
-		return this._parent;
-	}
+	get parent(){ return this.#parent }
 	get siblings(){
 		let family = new Set(
 			// child of earth (Q2) if no parent
@@ -55,14 +51,12 @@ export class Jurisdiction {
 		return [...family]
 	}
 	findRelations(lookup){ // called once graph phonebook is ready
-		if(this._parent_geo_id){
-			this._parent = lookup(this._parent_geo_id)
-			delete this._parent_geo_id
-			this._parent.acceptChild(this)
+		if(this.#relation_ids?.parent){
+			this.#parent = lookup(this.#relation_ids.parent)
+			this.#parent.acceptChild(this)
 		}
-		if(this._capitalQid){
-			this.capital = lookup(this._capitalQid)
-			delete this._capitalQid
+		if(this.#relation_ids?.capital){
+			this.capital = lookup(this.#relation_ids.capital)
 			this.capital.administer(this)
 		}
 		this.investments.map( dst_geo_id => {
@@ -83,18 +77,18 @@ export class Jurisdiction {
 		]
 	}
 	sendMission(mission){
-		if(mission instanceof Mission) this._sendsMissions.add(mission)
+		if(mission instanceof Mission) this.#missions.sends.add(mission)
 	}
 	receiveMission(mission){
-		if(mission instanceof Mission) this._receivesMissions.add(mission)
+		if(mission instanceof Mission) this.#missions.receives.add(mission)
 	}
 	get sendsMissions(){
-		return [...this._sendsMissions]
+		return [...this.#missions.sends]
 			.sort((a,b)=>a.to.country.geo_id-b.to.country.geo_id)
 	}
 	get receivesMissions(){
 		return [
-			...this._receivesMissions,
+			...this.#missions.receives,
 			...this.children.map(c=>c.receivesMissions).flat()
 		].sort((a,b)=>a.from.country.geo_id-b.from.country.geo_id)
 	}
@@ -115,12 +109,12 @@ export class Jurisdiction {
 		if(this.#graph) jur.useGraph(this.#graph)
 	}
 	acceptChild(child){
-		this._children.add(child)
+		this.#children.add(child)
 		child.setParent(this)
 		this.shareNetworks(child)
 	}
 	setParent(parent){
-		if(!this._parent) this._parent = parent
+		if(!this.#parent) this.#parent = parent
 		this.shareNetworks(parent)
 	}
 	administer(jur){
@@ -130,8 +124,8 @@ export class Jurisdiction {
 		if( ! (twin instanceof Jurisdiction) ){
 			throw "can't twin with something that's not a jurisdiction"
 		}
-		if(!this._twins.has(twin)){
-			this._twins.add(twin)
+		if(!this.#twins.has(twin)){
+			this.#twins.add(twin)
 			twin.twinWith(this)
 		}
 	}
@@ -200,7 +194,7 @@ export class Jurisdiction {
 		return this.country.geo_id == 2
 	}
 	get twins(){
-		return [...this._twins]
+		return [...this.#twins]
 	}
 	get twinsRecursive(){
 		return [
@@ -215,7 +209,7 @@ export class Jurisdiction {
 		]
 	}
 	get hasTwins(){
-		return this._twins.size > 0
+		return this.#twins.size > 0
 	}
 	get businessCount(){
 		return [this,...this.descendants]
@@ -239,7 +233,7 @@ export class Jurisdiction {
 		delete this._boundaryPromise
 	}
 	get children(){
-		return [...this._children]
+		return [...this.#children]
 	}
 	get node(){
 		if(!this._node){ this._node = new Node(this) }
