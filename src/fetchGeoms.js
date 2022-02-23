@@ -13,7 +13,7 @@ export async function assignBoundaries(jurisdictions){
 	// least simplified only, for now
 	const prom = fetch(`${topoGeometry}?geo_ids=${idStr}&level=3`)
 		.then( response => response.json() )
-		.then( topojson => features(topojson,'jurs') );
+		.then( topojson => features(topojson,'jurs').features );
 	// each jur waits for the collective geom call to resolve, then handles it
 	toFetch.map( jur => handleResponse(jur,prom) )
 	await prom
