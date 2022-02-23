@@ -1,4 +1,6 @@
-import { geometry as geoAPI, topoGeometry } from './API'
+import { topoGeometry } from './API'
+import { feature as features } from 'topojson-client'
+
 
 export async function assignBoundaries(jurisdictions){
 	// just the ones that havn't been fetched yet
@@ -7,17 +9,22 @@ export async function assignBoundaries(jurisdictions){
 		// necessary because some requests may still be in flight
 		return Promise.all( jurisdictions.map(j=>j.withGeom('boundary')) )
 	}
-//	json(`${topoGeometry}?geo_ids=${toFetch.map(j=>j.geo_id).join(',')}&level=1`)
-	const prom = fetch(`${geoAPI}?geo_ids=${toFetch.map(j=>j.geo_id).join(',')}`)
-		.then( response => response.json() );
-	toFetch.map( jur => {
-		jur._boundaryPromise = prom.then( response => {
-			const data = response.find( result => jur.geo_id == result.geo_id )
-			data && jur.setGeometry(data.geometry)
-			return jur
-		})
-		jur.queryStatus.boundary = 1 // in progress
-	} )
+	const idStr = toFetch.map(j=>j.geo_id).join(',')
+	// least simplified only, for now
+	const prom = fetch(`${topoGeometry}?geo_ids=${idStr}&level=3`)
+		.then( response => response.json() )
+		.then( topojson => features(topojson,'jurs') );
+	// each jur waits for the collective geom call to resolve, then handles it
+	toFetch.map( jur => handleResponse(jur,prom) )
 	await prom
 	return jurisdictions
+}
+
+function handleResponse(jur,promise){
+	jur._boundaryPromise = promise.then( response => {
+		const data = response.find( result => jur.geo_id == result.properties.geo_id )
+		data && jur.setGeometry(data.geometry)
+		return jur
+	})
+	jur.queryStatus.boundary = 1 // in progress
 }

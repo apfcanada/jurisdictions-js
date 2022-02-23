@@ -4,7 +4,7 @@ import twinsData from './twinning-data.json'
 import dipMissions from './missions.json'
 import tradeAgreements from './canada-trade-agreements.json'
 
-test('Build full graph withour errors',() => {
+test('Build full graph without errors',() => {
 	const graph = new JurisdictionGraph(staticData);
 } )
 

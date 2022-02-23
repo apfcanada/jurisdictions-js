@@ -261,7 +261,7 @@ export class Jurisdiction {
 	get depth(){
 		return this.ancestors.length
 	}
-	// returns a promise resolving to this jurisdiction with  geometry available
+	// returns a promise resolving to this jurisdiction with geometry available
 	withGeom(type){
 		if(!['point','boundary'].includes(type)){
 			console.warn('invalid geometry type requested')
