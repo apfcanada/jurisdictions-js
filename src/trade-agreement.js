@@ -1,17 +1,18 @@
 import { Connection } from './connection.js'
 
 export class TradeAgreement extends Connection {
+	#data
 	constructor(data,...signatories){
 		super(...signatories)
-		this._data = data
+		this.#data = data
 	}
 	get name(){
-		return this._data.agreementLabel
+		return this.#data.agreementLabel
 	}
 	get signatories(){
-		return this._jurs
+		return this.jurs
 	}
 	get startDate(){
-		return this._data?.year
+		return this.#data?.year
 	}
 }
