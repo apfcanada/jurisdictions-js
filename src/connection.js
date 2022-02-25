@@ -7,11 +7,11 @@ export class Connection {
 	constructor(...jurs){
 		// validate inputs
 		if( jurs.length < 2 ){
-			return console.warn('one jurisdiction does not a connection make')
-		}else if( jurs.some( j => ! j instanceof Jurisdiction) ){
-			return console.warn('connection must be between jurisdictions')
+			throw 'one jurisdiction does not a connection make'
+		}else if( jurs.some( j => ! ( j instanceof Jurisdiction ) ) ){
+			throw 'connection must be between jurisdictions'
 		}else if( jurs.length != (new Set(jurs)).size ){
-			return console.warn('connections cannot be reflexive')
+			throw 'connections cannot be reflexive'
 		}
 		this.#jurs = jurs
 	}
@@ -25,6 +25,7 @@ export class DirectedConnection extends Connection{
 	#to
 	#from
 	constructor(source,target){
+		
 		super(source,target)
 		this.#from = source
 		this.#to = target
