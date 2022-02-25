@@ -37,3 +37,13 @@ export class DirectedConnection extends Connection{
 		return this.#to
 	}
 }
+
+export class ConnectionAggregator{
+	#connections
+	constructor(connections){
+		if( connections.some( conn => ! ( conn instanceof Connection ) ) ){
+			throw 'this is not a connection'
+		}
+		this.#connections = connections
+	}
+}

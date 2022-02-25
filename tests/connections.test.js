@@ -1,7 +1,8 @@
 import { 
 	JurisdictionGraph,
 	Connection,
-	DirectedConnection
+	DirectedConnection,
+	ConnectionAggregator
 } from '../src/'
 import staticData from './staticGraphData.json'
 
@@ -25,4 +26,17 @@ test('Can create and validate directed connections',() => {
 	expect(()=>new DirectedConnection(toronto,toronto)).toThrow()
 	expect(()=>new DirectedConnection(toronto,undefined)).toThrow()
 	expect(()=>new DirectedConnection(toronto)).toThrow()
+} )
+
+test('Can create a connection aggregator',() => {
+	const graph = new JurisdictionGraph(staticData);
+	const [toronto,beijing,ottawa,shanghai] = graph.lookupNow([10,111,21,240])
+	const conns = [
+		new Connection(toronto,beijing),
+		new DirectedConnection(toronto,shanghai),
+		new Connection(ottawa,beijing),
+		new DirectedConnection(ottawa,shanghai),
+	]
+	const Agg = new ConnectionAggregator(conns)
+	expect(()=>new ConnectionAggregator([...conns,/regex!/])).toThrow()
 } )
