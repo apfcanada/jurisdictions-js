@@ -53,9 +53,11 @@ test('Can aggregate to countries',() => {
 		new DirectedConnection(ottawa,shanghai),
 	]
 	const aggregator = new ConnectionAggregator(conns)
-	expect(aggregator.top.length).toBe(2)	
-	expect(aggregator.top).toContain(china)
-	expect(aggregator.top).toContain(canada)
+	const top = aggregator.top
+	expect(top.length).toBe(2)	
+	expect(top).toContain(china)
+	expect(top).toContain(canada)
+	expect(top).not.toContain(ottawa)
 } )
 
 test('Can aggregate with focus',() => {
@@ -72,6 +74,5 @@ test('Can aggregate with focus',() => {
 	aggregator.focus(toronto)
 	expect(aggregator.top.length).toBe(2)	
 	expect(aggregator.top).toContain(china)
-	// TODO why is this timing out instead of failing?
-	// expect(aggregator.top).toContain(toronto)
+	expect(aggregator.top).toContain(toronto)
 } )
