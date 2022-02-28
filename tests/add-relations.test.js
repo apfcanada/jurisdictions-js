@@ -29,3 +29,9 @@ test('Add child jurisdiction',() => {
 	expect(newChild.parent).toBe(parent)
 	expect(graph.lookupNow(newChild.geo_id)).toBeDefined()
 } )
+
+test('Build empty graph, find nothing in it',() => {
+	const graph = new JurisdictionGraph({jurisdictions:[],types:[]});
+	expect(graph.lookupNow(1)).toBeUndefined()
+	expect(graph.lookupNow([1]).length).toBe(0)
+} )

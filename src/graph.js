@@ -26,6 +26,7 @@ export class JurisdictionGraph{
 	lookupNow(input){
 		if(input instanceof Array){
 			return input.map( val => this.lookupNow(val) )
+				.filter( val => val instanceof Jurisdiction)
 		}
 		if( input instanceof Jurisdiction ) return input;
 		if( typeof input == 'number' && Number.isInteger(input) ){
