@@ -73,3 +73,17 @@ export class ConnectionAggregator{
 function isJur(jur){
 	return jur instanceof Jurisdiction
 }
+
+class AggregateConnection{
+	#connections
+	constructor(connections){
+		this.#connections = connections
+	}
+	get count(){
+		return this.#connections.length
+	}
+	totalValue(valueFunction){
+		return this.#connections
+			.reduce( (cumsum,connection) => cumsum + valueFunction(connection), 0 )
+	}
+}
