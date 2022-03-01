@@ -47,6 +47,8 @@ export class ConnectionAggregator{
 	constructor(connections){
 		if( connections.some( conn => ! ( conn instanceof Connection ) ) ){
 			throw 'this is not a connection'
+		}else if(connections.length==0){
+			throw 'no connections supplied'
 		}
 		this.#connections = connections
 	}
