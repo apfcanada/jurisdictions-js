@@ -7,9 +7,8 @@ export class Jurisdiction {
 	#names = { } // keyed by language code, e.g. 'en','zh','zh_classical'
 	#graph
 	#parent
-	#twins = new Set();
 	#children = new Set();
-	#missions = { sends: new Set(), receives: new Set() }
+	#connections = new Map();
 	constructor({
 		geo_id,wikidata,osm_id,parent_id,capital_id,
 		names,type,x,y,
@@ -40,7 +39,6 @@ export class Jurisdiction {
 		this._investsIn = new Set();
 		this._hasInvestmentFrom = new Set();
 		this._borders = new Set()
-		this._directTradeAgreements = new Set()
 		this._directBusinessCount = bizCount ?? 0
 		// record query status to prevent retries 0: none, 1: in progress, 2: done 
 		this.queryStatus = { neighbors: 0, population: 0, boundary: 0 }
@@ -55,7 +53,11 @@ export class Jurisdiction {
 	get osm_id(){ return this.#ids.osm }
 	get parent(){ return this.#parent }
 	get name(){ return this.#names }
-
+	
+	notifyOfConnection(connection){
+		// will just overwrite if given the same connection.id again
+		this.#connections.set(connection.id,connection)
+	}
 	useGraph(graph){
 		if( this.#graph == graph ) return;
 		this.#graph = graph;
@@ -83,32 +85,29 @@ export class Jurisdiction {
 		} )
 		delete this.investments
 	}
-	signTradeAgreement(agreement){
-		this._directTradeAgreements.add(agreement)
-	}
 	get directTradeAgreements(){
-		return [...this._directTradeAgreements]
+		return [...this.#connections.values()]
+			.filter( conn => conn.constructor.name == 'TradeAgreement' )
 	}
 	get tradeAgreements(){
 		return [
-			...this._directTradeAgreements,
-			...this.ancestors.map(a=>[...a._directTradeAgreements]).flat()
+			...this.directTradeAgreements,
+			...this.ancestors.map(a=>a.directTradeAgreements).flat()
 		]
 	}
-	sendMission(mission){
-		if(mission instanceof Mission) this.#missions.sends.add(mission)
-	}
-	receiveMission(mission){
-		if(mission instanceof Mission) this.#missions.receives.add(mission)
-	}
 	get sendsMissions(){
-		return [...this.#missions.sends]
+		return [...this.#connections.values()]
+			.filter( conn => conn.constructor.name == 'Mission' )
+			.filter( mission => mission.from == this )
 			.sort((a,b)=>a.to.country.geo_id-b.to.country.geo_id)
 	}
 	get receivesMissions(){
+		let direct = [...this.#connections.values()]
+			.filter( conn => conn.constructor.name == 'Mission' )
+			.filter( mission => mission.to == this )
 		return [
-			...this.#missions.receives,
-			...this.children.map(c=>c.receivesMissions).flat()
+			...direct,
+			...this.children.map(j=>j.receivesMissions).flat()
 		].sort((a,b)=>a.from.country.geo_id-b.from.country.geo_id)
 	}
 	get hasDiplomacy(){
@@ -138,15 +137,6 @@ export class Jurisdiction {
 	}
 	administer(jur){
 		this.administers = jur
-	}
-	twinWith(twin){
-		if( ! (twin instanceof Jurisdiction) ){
-			throw "can't twin with something that's not a jurisdiction"
-		}
-		if(!this.#twins.has(twin)){
-			this.#twins.add(twin)
-			twin.twinWith(this)
-		}
 	}
 	borderWith(neighbor){
 		if(!this._borders.has(neighbor)){
@@ -213,22 +203,24 @@ export class Jurisdiction {
 		return this.country.geo_id == 2
 	}
 	get twins(){
-		return [...this.#twins]
+		return [...this.#connections.values()]
+			.filter( conn => conn.constructor.name == 'Twinning' )
+			.map( twinning => twinning.partnerOf(this) )
 	}
 	get twinsRecursive(){
 		return [
-			...this.twins, 
+			...this.twins,
 			...this.children.map(c=>c.twinsRecursive).flat() 
 		]
 	}
 	get twinPairsRecursive(){
 		return [
-			...this.twins.map(t=>[this,t]), 
-			...this.children.map(c=>c.twinPairsRecursive).flat() 
+			...this.twins.map(twin=>[this,twin]),
+			...this.children.map(child=>child.twinPairsRecursive).flat() 
 		]
 	}
 	get hasTwins(){
-		return this.#twins.size > 0
+		return this.twins.length > 0
 	}
 	get businessCount(){
 		return [this,...this.descendants]

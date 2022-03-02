@@ -18,7 +18,10 @@ export class Connection {
 	get id(){ // unique to this set of jurisdictions
 		return this.#jurs.map(j=>j.geo_id).sort((a,b)=>b-a).join('|')
 	}
-	get allJurs(){
+	notify(){
+		this.#jurs.forEach( jur => jur.notifyOfConnection(this) )
+	}
+	get jurisdictions(){
 		return this.#jurs
 	}
 }
@@ -68,7 +71,7 @@ export class ConnectionAggregator{
 		} )
 	}
 	get leaves(){
-		return [ ...new Set( this.#connections.map(conn=>conn.allJurs).flat() ) ]
+		return [ ...new Set( this.#connections.map(conn=>conn.jurisdictions).flat() ) ]
 	}
 }
 
