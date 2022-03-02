@@ -2,6 +2,7 @@ import { graph as API } from './API.js'
 import { Mission } from './mission.js'
 import { Jurisdiction } from './jurisdiction.js'
 import { TradeAgreement } from './trade-agreement.js' 
+import { Twinning } from './twinning.js'
 
 export class JurisdictionGraph{
 	constructor(data){
@@ -76,9 +77,7 @@ export class JurisdictionGraph{
 					return console.warn( `Mission ${missionData.missionID} missing at least one of these jurisdictions`,
 						missionData.operatorID, missionData.destID )
 				}
-				let mission = new Mission({operator,destination,missionData})
-				operator.sendMission(mission)
-				destination.receiveMission(mission)
+				new Mission({operator,destination,missionData}).notify()
 			} )
 		} )
 	}
@@ -86,9 +85,8 @@ export class JurisdictionGraph{
 		this.ready.then( blah => {
 			twinsData.map( pair => {
 				try{
-					let A = this.lookupNow(pair.a)
-					let B = this.lookupNow(pair.b)
-					A.twinWith(B)
+					let [A,B] = this.lookupNow([pair.a,pair.b])
+					new Twinning(A,B).notify()
 				}catch(err){
 					console.warn('failed to find one or more of these twins:',pair)
 				}
@@ -99,10 +97,9 @@ export class JurisdictionGraph{
 		this.ready.then( blah => {
 			tradeAgreementData.map( agreement => {
 				let { signatories, ...data } = agreement 
-				let jurs = signatories.split(',').map(qid=>this.lookupNow(qid)).filter(j=>j)
+				let jurs = signatories.split(',').map(this.lookupNow).filter(j=>j)
 				if(jurs.length < 2) return;
-				let theAgreement = new TradeAgreement(data,...jurs)
-				jurs.map( jur => jur.signTradeAgreement(theAgreement) )
+				new TradeAgreement(data,...jurs).notify()
 			} )
 		} )
 	}

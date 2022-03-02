@@ -18,6 +18,12 @@ export class Connection {
 	get id(){ // unique to this set of jurisdictions
 		return this.#jurs.map(j=>j.geo_id).sort((a,b)=>b-a).join('|')
 	}
+	notify(){
+		this.#jurs.forEach( jur => jur.notifyOfConnection(this) )
+	}
+	get jurisdictions(){
+		return this.#jurs
+	}
 }
 
 // for directed connections between two jurisdictions

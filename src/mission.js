@@ -1,14 +1,15 @@
 import { DirectedConnection } from './connection.js'
 
 export class Mission extends DirectedConnection {
+	#data
 	constructor({missionData,operator,destination}){
 		super(operator,destination)
-		this._data = missionData // direct from wikidata
+		this.#data = missionData // direct from wikidata
 	}
 	get id(){
-		return this._data.missionID
+		return `mission:${super.id}/${this.#data.missionID}`
 	}
 	get type(){
-		return this._data.typeLabels
+		return this.#data.typeLabels
 	}
 }
