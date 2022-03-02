@@ -1,8 +1,6 @@
 export { JurisdictionGraph } from './graph.js'
 export { Jurisdiction } from './jurisdiction.js'
 export { assignBoundaries } from './fetchGeoms'
-export { 
-	Connection, 
-	DirectedConnection, 
-	ConnectionAggregator 
-} from './connection.js'
+export { Connection } from './connection.js'
+export { DirectedConnection } from './directedConnection.js'
+export { ConnectionAggregator } from './connectionAggregator.js'
