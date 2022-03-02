@@ -8,6 +8,6 @@ export class Twinning extends Connection {
 		return `twinning:${super.id}`
 	}
 	partnerOf(refJur){
-		this.jurisdictions.find( jur => jur != refJur )
+		return this.jurisdictions.find( jur => jur != refJur )
 	}
 }

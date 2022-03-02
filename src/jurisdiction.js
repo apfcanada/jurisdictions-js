@@ -205,18 +205,18 @@ export class Jurisdiction {
 	get twins(){
 		return [...this.#connections.values()]
 			.filter( conn => conn.constructor.name == 'Twinning' )
-			.map( conn => conn.partnerOf(this) )
+			.map( twinning => twinning.partnerOf(this) )
 	}
 	get twinsRecursive(){
 		return [
-			...this.twins, 
+			...this.twins,
 			...this.children.map(c=>c.twinsRecursive).flat() 
 		]
 	}
 	get twinPairsRecursive(){
 		return [
-			...this.twins.map(t=>[this,t]), 
-			...this.children.map(c=>c.twinPairsRecursive).flat() 
+			...this.twins.map(twin=>[this,twin]),
+			...this.children.map(child=>child.twinPairsRecursive).flat() 
 		]
 	}
 	get hasTwins(){
