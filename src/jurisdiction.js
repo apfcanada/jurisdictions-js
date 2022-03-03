@@ -9,6 +9,12 @@ export class Jurisdiction {
 	#parent
 	#children = new Set();
 	#connections = new Map();
+	#borders = new Set();
+	#investsIn = new Set();
+	#hasInvestmentFrom = new Set();
+	#directBusinessCount = 0;
+	#population;
+	#node;
 	constructor({
 		geo_id,wikidata,osm_id,parent_id,capital_id,
 		names,type,x,y,
@@ -36,10 +42,7 @@ export class Jurisdiction {
 		this.geom = {}
 		if( x && y ) this.geom.point = { type: 'POINT', coordinates: [x,y] }
 		this.investments = investments ?? [] // unsets once phonebook is ready
-		this._investsIn = new Set();
-		this._hasInvestmentFrom = new Set();
-		this._borders = new Set()
-		this._directBusinessCount = bizCount ?? 0
+		if(bizCount) this.#directBusinessCount = bizCount;
 		// record query status to prevent retries 0: none, 1: in progress, 2: done 
 		this.queryStatus = { neighbors: 0, population: 0, boundary: 0 }
 		if(graph){ 
@@ -139,43 +142,43 @@ export class Jurisdiction {
 		this.administers = jur
 	}
 	borderWith(neighbor){
-		if(!this._borders.has(neighbor)){
-			this._borders.add(neighbor)
+		if(!this.#borders.has(neighbor)){
+			this.#borders.add(neighbor)
 			neighbor.borderWith(this)
 		}
 	}
 	borders(jur){
 		if(!jur){
-			return [...this._borders]
+			return [...this.#borders]
 		}else{
-			return this._borders.has(jur)
+			return this.#borders.has(jur)
 		}
 	}
 	investIn(partner){
-		this._investsIn.add(partner)
+		this.#investsIn.add(partner)
 		partner.acceptInvestmentFrom(this)
 	}
 	acceptInvestmentFrom(partner){
-		this._hasInvestmentFrom.add(partner)
+		this.#hasInvestmentFrom.add(partner)
 	}
 	get hasInvestment(){ // recursively check for investment among children
 		return (
-			this._investsIn.size > 0 || 
-			this._hasInvestmentFrom.size > 0 ||
+			this.#investsIn.size > 0 || 
+			this.#hasInvestmentFrom.size > 0 ||
 			this.children.some(j=>j.hasInvestment)
 		)
 	}
 	get investmentPartners(){ // direct only
 		return new Set([
-			...this._investsIn,
-			...this._hasInvestmentFrom
+			...this.#investsIn,
+			...this.#hasInvestmentFrom
 		])
 	}
 	setPopulation(population){
-		this._population = Number(population)
+		this.#population = Number(population)
 	}
 	get population(){
-		return this._population // may well be undefined
+		return this.#population // may well be undefined
 	}
 	get country(){
 		let jur = this
@@ -224,7 +227,7 @@ export class Jurisdiction {
 	}
 	get businessCount(){
 		return [this,...this.descendants]
-			.reduce( (sum,j) => sum + j._directBusinessCount, 0 )
+			.reduce( (sum,j) => sum + j.#directBusinessCount, 0 )
 	}
 	get boundary(){
 		return this.geom?.polygon ?? this.geom?.point
@@ -247,8 +250,8 @@ export class Jurisdiction {
 		return [...this.#children]
 	}
 	get node(){
-		if(!this._node){ this._node = new Node(this) }
-		return this._node
+		if(!this.#node){ this.#node = new Node(this) }
+		return this.#node
 	}
 	get depth(){
 		return this.ancestors.length
