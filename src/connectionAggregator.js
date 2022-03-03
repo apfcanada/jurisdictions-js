@@ -15,7 +15,7 @@ export class ConnectionAggregator{
 	// focusing on a jurisdiction prevents aggregation to any higher level
 	// connections above the focus will be ignored
 	focus(jur){
-		throwifNotJur(jur)
+		throwIfNotJur(jur)
 		// only two jurisdictions can be focused: one in canada, one in asia
 		this.#focused.set(jur.canadian?'canada':'asia',jur)
 	}
@@ -31,6 +31,7 @@ export class ConnectionAggregator{
 			conn.jurisdictions.filter(j=>canadianFocus.contains(j)).map( canJur => {
 				// TODO
 			} )
+		} )
 		return [...connections.values()]
 	}
 	get leaves(){

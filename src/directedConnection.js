@@ -9,6 +9,9 @@ export class DirectedConnection extends Connection{
 		this.#from = source
 		this.#to = target
 	}
+	get id(){
+		return `${this.#from.geo_id}->${this.#to.geo_id}`
+	}
 	get from(){
 		return this.#from
 	}
