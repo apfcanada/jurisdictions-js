@@ -276,4 +276,7 @@ export class Jurisdiction {
 			return this._boundaryPromise
 		}
 	}
+	contains(jur){
+		return jur == this || jur.ancestors.includes(this)
+	}
 }

@@ -4,7 +4,6 @@ import { Jurisdiction } from './jurisdiction.js'
 export class ConnectionAggregator{
 	#connections
 	#focused = new Map();
-	#expanded = new Set();
 	constructor(connections){
 		if( connections.some( conn => ! ( conn instanceof Connection ) ) ){
 			throw 'this is not a connection'
@@ -16,17 +15,23 @@ export class ConnectionAggregator{
 	// focusing on a jurisdiction prevents aggregation to any higher level
 	// connections above the focus will be ignored
 	focus(jur){
-		if(!isJur(jur)) throw 'Can only focus on a jurisdiction';
-		this.#focused.set(jur.country,jur)
+		throwifNotJur(jur)
+		// only two jurisdictions can be focused: one in canada, one in asia
+		this.#focused.set(jur.canadian?'canada':'asia',jur)
 	}
 	unfocus(jur){
-		if(!isJur(jur)) throw 'Can only focus on a jurisdiction';
-		this.#focused.delete(jur.country)
+		throwIfNotJur(jur)
+		this.#focused.delete(jur.canadian?'canada':'asia')
 	}
-	get top(){
-		return [...new Set(this.leaves.map(jur=>jur.country))].map( country => {
-			return this.#focused.has(country) ? this.#focused.get(country) : country
-		} )
+	get connections(){
+		const canadianFocus = this.#focused.has('canada') ?
+			this.#focused.get('canada') : this.leaves.find(j=>j.canadian).country
+		const connections = new Map();
+		this.#connections.map( conn => {
+			conn.jurisdictions.filter(j=>canadianFocus.contains(j)).map( canJur => {
+				// TODO
+			} )
+		return [...connections.values()]
 	}
 	get leaves(){
 		return [ ...new Set( this.#connections.map(conn=>conn.jurisdictions).flat() ) ]
@@ -48,6 +53,8 @@ class AggregateConnection{
 	}
 }
 
-function isJur(jur){
-	return jur instanceof Jurisdiction
+function throwIfNotJur(jur){
+	if(!(jur instanceof Jurisdiction)){
+		throw 'Can only focus on a jurisdiction'
+	}
 }
