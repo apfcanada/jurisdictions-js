@@ -120,3 +120,11 @@ test('IDs are read-only',() => {
 		expect(()=>canada.osm_id='r1').toThrow(TypeError)
 	} )
 })
+
+test('Count investments',()=>{
+	const graph = new JurisdictionGraph(staticData);
+	const guangzhou = graph.lookupNow(283)
+	expect(guangzhou.hasInvestment).toBe(true)
+	expect(guangzhou.investmentPartners.size).toEqual(8)
+	
+})

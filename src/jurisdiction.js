@@ -1,17 +1,16 @@
 import { geometry as geoAPI } from './API.js'
 import { Node } from './node.js'
 import { Mission } from './mission.js'
+import { FDI } from './fdi.js'
 
 export class Jurisdiction {
-	#ids = { relations: {} }
+	#ids = { relations: {}, investments: [] }
 	#names = { } // keyed by language code, e.g. 'en','zh','zh_classical'
 	#graph
 	#parent
 	#children = new Set();
 	#connections = new Map();
 	#borders = new Set();
-	#investsIn = new Set();
-	#hasInvestmentFrom = new Set();
 	#directBusinessCount = 0;
 	#population;
 	#node;
@@ -30,6 +29,7 @@ export class Jurisdiction {
 		this.#ids.osm = osm_id
 		if(parent_id) this.#ids.relations.parent = parent_id; 
 		if(capital_id) this.#ids.relations.capital = capital_id;
+		if(investments) this.#ids.investments = investments
 		
 		Object.entries( names ?? {} ).map( ( [ key, name ] ) => {
 			if( /^[a-z]{2}$/.test(key) && typeof name == 'string' ){
@@ -41,7 +41,6 @@ export class Jurisdiction {
 
 		this.geom = {}
 		if( x && y ) this.geom.point = { type: 'POINT', coordinates: [x,y] }
-		this.investments = investments ?? [] // unsets once phonebook is ready
 		if(bizCount) this.#directBusinessCount = bizCount;
 		// record query status to prevent retries 0: none, 1: in progress, 2: done 
 		this.queryStatus = { neighbors: 0, population: 0, boundary: 0 }
@@ -74,7 +73,7 @@ export class Jurisdiction {
 		family.delete(this)
 		return [...family]
 	}
-	findRelations(lookup){ // called once graph phonebook is ready
+	findRelations(lookup){ // called once graph is ready
 		if(this.#ids.relations?.parent){
 			this.#parent = lookup(this.#ids.relations.parent)
 			this.#parent.acceptChild(this)
@@ -83,10 +82,10 @@ export class Jurisdiction {
 			this.capital = lookup(this.#ids.relations.capital)
 			this.capital.administer(this)
 		}
-		this.investments.map( dst_geo_id => {
-			this.investIn( lookup(dst_geo_id) )
+		this.#ids.investments.map( dst_geo_id => {
+			const partner = lookup(dst_geo_id)
+			new FDI(this,partner).notify()
 		} )
-		delete this.investments
 	}
 	get directTradeAgreements(){
 		return [...this.#connections.values()]
@@ -154,25 +153,18 @@ export class Jurisdiction {
 			return this.#borders.has(jur)
 		}
 	}
-	investIn(partner){
-		this.#investsIn.add(partner)
-		partner.acceptInvestmentFrom(this)
-	}
-	acceptInvestmentFrom(partner){
-		this.#hasInvestmentFrom.add(partner)
-	}
 	get hasInvestment(){ // recursively check for investment among children
 		return (
-			this.#investsIn.size > 0 || 
-			this.#hasInvestmentFrom.size > 0 ||
-			this.children.some(j=>j.hasInvestment)
+			[...this.#connections.values()].some( conn => conn instanceof FDI )
+			|| this.children.some( child => child.hasInvestment )
 		)
 	}
 	get investmentPartners(){ // direct only
-		return new Set([
-			...this.#investsIn,
-			...this.#hasInvestmentFrom
-		])
+		return new Set(
+			[...this.#connections.values()]
+				.filter( conn => conn instanceof FDI )
+				.map( inv => inv.from == this ? inv.to : inv.from )
+		)
 	}
 	setPopulation(population){
 		this.#population = Number(population)
