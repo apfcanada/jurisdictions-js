@@ -2,6 +2,8 @@ import { geometry as geoAPI } from './API.js'
 import { Node } from './node.js'
 import { Mission } from './mission.js'
 import { FDI } from './fdi.js'
+import { Twinning } from './twinning.js'
+import { TradeAgreement } from './trade-agreement.js'
 
 export class Jurisdiction {
 	#ids = { relations: {}, investments: [] }
@@ -89,7 +91,7 @@ export class Jurisdiction {
 	}
 	get directTradeAgreements(){
 		return [...this.#connections.values()]
-			.filter( conn => conn.constructor.name == 'TradeAgreement' )
+			.filter( conn => conn instanceof TradeAgreement )
 	}
 	get tradeAgreements(){
 		return [
@@ -99,13 +101,13 @@ export class Jurisdiction {
 	}
 	get sendsMissions(){
 		return [...this.#connections.values()]
-			.filter( conn => conn.constructor.name == 'Mission' )
+			.filter( conn => conn instanceof Mission )
 			.filter( mission => mission.from == this )
 			.sort((a,b)=>a.to.country.geo_id-b.to.country.geo_id)
 	}
 	get receivesMissions(){
 		let direct = [...this.#connections.values()]
-			.filter( conn => conn.constructor.name == 'Mission' )
+			.filter( conn => conn instanceof Mission )
 			.filter( mission => mission.to == this )
 		return [
 			...direct,
@@ -199,7 +201,7 @@ export class Jurisdiction {
 	}
 	get twins(){
 		return [...this.#connections.values()]
-			.filter( conn => conn.constructor.name == 'Twinning' )
+			.filter( conn => conn instanceof Twinning )
 			.map( twinning => twinning.partnerOf(this) )
 	}
 	get twinsRecursive(){

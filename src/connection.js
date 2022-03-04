@@ -5,11 +5,11 @@ export class Connection {
 	constructor(...jurs){
 		// validate inputs
 		if( jurs.length < 2 ){
-			throw 'one jurisdiction does not a connection make'
-		}else if( jurs.some( j => ! ( j.constructor.name == 'Jurisdiction' ) ) ){
-			throw 'connection must be between jurisdictions'
+			throw 'It takes two to tango'
+		}else if( jurs.some( j => !( j?.geo_id && j?.wikidata ) ) ){ // duck typing
+			throw 'Connection must be between jurisdictions'
 		}else if( jurs.length != (new Set(jurs)).size ){
-			throw 'connections cannot be reflexive'
+			throw 'Connections cannot be reflexive'
 		}
 		this.#jurs = jurs
 	}
