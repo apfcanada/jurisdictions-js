@@ -1,7 +1,7 @@
 // this is a highly abstract class for undirected connections between two or 
 // more jurisdictions
 export class Connection {
-	#jurs
+	#jurs // array
 	constructor(...jurs){
 		// validate inputs
 		if( jurs.length < 2 ){
@@ -21,25 +21,5 @@ export class Connection {
 	}
 	get jurisdictions(){
 		return this.#jurs
-	}
-}
-
-// for directed connections between two jurisdictions
-export class DirectedConnection extends Connection{
-	#to
-	#from
-	constructor(source,target){
-		super(source,target)
-		this.#from = source
-		this.#to = target
-	}
-	get id(){
-		return `${this.#from.geo_id}->${this.#to.geo_id}`
-	}
-	get from(){
-		return this.#from
-	}
-	get to(){
-		return this.#to
 	}
 }

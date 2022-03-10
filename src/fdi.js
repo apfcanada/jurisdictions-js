@@ -1,4 +1,4 @@
-import { DirectedConnection } from './connection.js'
+import { DirectedConnection } from './directedConnection.js'
 
 export class FDI extends DirectedConnection{
 	constructor(source,target){

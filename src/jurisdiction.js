@@ -266,4 +266,7 @@ export class Jurisdiction {
 			return assignBoundaries([this]).then( jurs => this )
 		}
 	}
+	contains(jur){
+		return jur == this || jur.ancestors.includes(this)
+	}
 }
