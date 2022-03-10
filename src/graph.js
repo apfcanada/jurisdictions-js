@@ -10,11 +10,12 @@ export class JurisdictionGraph{
 		this.lookup = this.lookup.bind(this)
 		this.lookupNow = this.lookupNow.bind(this)
 		this.phonebook = new Map();
-		this.#jurisdictionTypes = data.types ?? []
 		if(data){
+			this.#jurisdictionTypes = data.types ?? []
 			this.ready = Promise.resolve(buildHierarchy(data,this.phonebook,this) )
 		}else{
 			this.ready = fetch(API).then(r=>r.json()).then( data => {
+				this.#jurisdictionTypes = data.types ?? []
 				buildHierarchy(data,this.phonebook,this)
 			} )
 		}
