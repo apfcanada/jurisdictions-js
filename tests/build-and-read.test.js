@@ -126,5 +126,9 @@ test('Count investments',()=>{
 	const guangzhou = graph.lookupNow(283)
 	expect(guangzhou.hasInvestment).toBe(true)
 	expect(guangzhou.investmentPartners.size).toEqual(8)
-	
+})
+
+test('Knows of jurisdiction Types',()=>{
+	const graph = new JurisdictionGraph(staticData);
+	expect(graph.jurisdictionTypes.length).toBe(40)
 })

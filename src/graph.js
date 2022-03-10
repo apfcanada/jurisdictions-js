@@ -5,10 +5,12 @@ import { TradeAgreement } from './trade-agreement.js'
 import { Twinning } from './twinning.js'
 
 export class JurisdictionGraph{
+	#jurisdictionTypes
 	constructor(data){
 		this.lookup = this.lookup.bind(this)
 		this.lookupNow = this.lookupNow.bind(this)
 		this.phonebook = new Map();
+		this.#jurisdictionTypes = data.types ?? []
 		if(data){
 			this.ready = Promise.resolve(buildHierarchy(data,this.phonebook,this) )
 		}else{
@@ -67,6 +69,9 @@ export class JurisdictionGraph{
 	async canada(){
 		await this.ready;
 		return this.lookupNow(2)
+	}
+	get jurisdictionTypes(){
+		return this.#jurisdictionTypes
 	}
 	addDiplomaticMissions(missionsData){
 		this.ready.then( blah => {
