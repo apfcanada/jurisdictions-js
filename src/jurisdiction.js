@@ -1,4 +1,4 @@
-import { geometry as geoAPI } from './API.js'
+import { assignBoundaries } from './fetchGeoms.js'
 import { Node } from './node.js'
 import { Mission } from './mission.js'
 import { FDI } from './fdi.js'
@@ -263,14 +263,7 @@ export class Jurisdiction {
 			// request is in progress
 			if(this.queryStatus.boundary == 1) return this._boundaryPromise;
 			// request hasn't been made yet; queryStatus.boundary == 0
-			this._boundaryPromise = fetch(`${geoAPI}?geo_id=${this.geo_id}`)
-				.then(response => response.json())
-				.then( data => {
-					this.setGeometry(data)
-					return this
-				} )
-			this.queryStatus.boundary = 1 // sent but not received
-			return this._boundaryPromise
+			return assignBoundaries([this]).then( jurs => this )
 		}
 	}
 }
