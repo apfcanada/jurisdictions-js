@@ -89,9 +89,11 @@ export class Jurisdiction {
 			new FDI(this,partner).notify()
 		} )
 	}
-	get directTradeAgreements(){
+	get connections(){
 		return [...this.#connections.values()]
-			.filter( conn => conn instanceof TradeAgreement )
+	}
+	get directTradeAgreements(){
+		return this.connections.filter( conn => conn instanceof TradeAgreement )
 	}
 	get tradeAgreements(){
 		return [
@@ -100,13 +102,13 @@ export class Jurisdiction {
 		]
 	}
 	get sendsMissions(){
-		return [...this.#connections.values()]
+		return this.connections
 			.filter( conn => conn instanceof Mission )
 			.filter( mission => mission.from == this )
 			.sort((a,b)=>a.to.country.geo_id-b.to.country.geo_id)
 	}
 	get receivesMissions(){
-		let direct = [...this.#connections.values()]
+		let direct = this.connections
 			.filter( conn => conn instanceof Mission )
 			.filter( mission => mission.to == this )
 		return [
@@ -157,14 +159,13 @@ export class Jurisdiction {
 	}
 	get hasInvestment(){ // recursively check for investment among children
 		return (
-			[...this.#connections.values()].some( conn => conn instanceof FDI )
+			this.connections.some( conn => conn instanceof FDI )
 			|| this.children.some( child => child.hasInvestment )
 		)
 	}
 	get investmentPartners(){ // direct only
 		return new Set(
-			[...this.#connections.values()]
-				.filter( conn => conn instanceof FDI )
+			this.connections.filter( conn => conn instanceof FDI )
 				.map( inv => inv.from == this ? inv.to : inv.from )
 		)
 	}
@@ -200,8 +201,7 @@ export class Jurisdiction {
 		return this.country.geo_id == 2
 	}
 	get twins(){
-		return [...this.#connections.values()]
-			.filter( conn => conn instanceof Twinning )
+		return this.connections.filter( conn => conn instanceof Twinning )
 			.map( twinning => twinning.partnerOf(this) )
 	}
 	get twinsRecursive(){
