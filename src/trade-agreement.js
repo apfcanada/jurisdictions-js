@@ -13,7 +13,7 @@ export class TradeAgreement extends Connection {
 		return this.#data.agreementLabel
 	}
 	get signatories(){
-		return this.jurs
+		return this.jurisdictions
 	}
 	get startDate(){
 		return this.#data?.year
