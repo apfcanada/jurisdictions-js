@@ -1,6 +1,5 @@
 import { assignBoundaries } from './fetchGeoms.js'
 import { Node } from './node.js'
-import { Mission } from './mission.js'
 import { FDI } from './fdi.js'
 import { TradeAgreement } from './trade-agreement.js'
 
@@ -114,16 +113,6 @@ export class Jurisdiction {
 				.some( key => connectionClass.test(key) )
 		}
 		return false
-	}
-	get connectionPoints(){ // TODO think through these arbitrary weights
-		return ( 
-			this.twinsRecursive.length * 0.2
-			+ this.directTradeAgreements.length * 0.5
-			+ this.receivesMissions.length * 0.3
-			+ this.sendsMissions.length * 0.3 
-			+ this.businessCount * 0.025
-			+ this.investmentPartners.size * 0.05
-		)
 	}
 	shareNetworks(jur){
 		if(this.#graph) jur.useGraph(this.#graph)
