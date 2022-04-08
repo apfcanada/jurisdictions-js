@@ -2,7 +2,6 @@ import { assignBoundaries } from './fetchGeoms.js'
 import { Node } from './node.js'
 import { Mission } from './mission.js'
 import { FDI } from './fdi.js'
-import { Twinning } from './twinning.js'
 import { TradeAgreement } from './trade-agreement.js'
 
 export class Jurisdiction {
@@ -55,6 +54,11 @@ export class Jurisdiction {
 	get osm_id(){ return this.#ids.osm }
 	get parent(){ return this.#parent }
 	get name(){ return this.#names }
+	get children(){ return [...this.#children] }
+	get population(){ return this.#population } // may well be undefined
+	get isCountry(){ return this === this.country }
+	get canadian(){ return this.country.geo_id == 2 }
+	get depth(){ return this.ancestors.length }
 	
 	notifyOfConnection(connection){
 		// will just overwrite if given the same connection.id again
@@ -87,43 +91,29 @@ export class Jurisdiction {
 			new FDI(this,partner).notify()
 		} )
 	}
-	connections(connectionClass){
+	connections(connectionClass,recurseOptions={}){
+		const { ancestors, descendants } = recurseOptions
 		if( connectionClass instanceof RegExp ){
-			return [...this.#connections.entries()]
+			let conns = [...this.#connections.entries()]
 				.filter( ([key,value]) => connectionClass.test(key) )
 				.map( ([key,value]) => value )
+			if(ancestors){ return [ ...conns,
+				...this.ancestors.map(a=>a.connections(connectionClass)).flat()
+			] }
+			if(descendants){ return [ ...conns,
+				...this.descendants.map(d=>d.connections(connectionClass)).flat()
+			] }
+			return conns
 		}
 		return [...this.#connections.values()]
 	}
+	
 	hasConnections(connectionClass){
 		if( connectionClass instanceof RegExp ){
 			return [...this.#connections.keys()]
 				.some( key => connectionClass.test(key) )
 		}
-		console.log(typeof connectionClass)
 		return false
-	}
-	get directTradeAgreements(){
-		return this.connections(/TradeAgreement/)
-	}
-	get tradeAgreements(){
-		return [
-			...this.directTradeAgreements,
-			...this.ancestors.map(a=>a.directTradeAgreements).flat()
-		]
-	}
-	get sendsMissions(){
-		return this.connections(/Mission/)
-			.filter( mission => mission.from == this )
-			.sort((a,b)=>a.to.country.geo_id-b.to.country.geo_id)
-	}
-	get receivesMissions(){
-		let direct = this.connections(/Mission/)
-			.filter( mission => mission.to == this )
-		return [
-			...direct,
-			...this.children.map(j=>j.receivesMissions).flat()
-		].sort((a,b)=>a.from.country.geo_id-b.from.country.geo_id)
 	}
 	get connectionPoints(){ // TODO think through these arbitrary weights
 		return ( 
@@ -163,12 +153,6 @@ export class Jurisdiction {
 			return this.#borders.has(jur)
 		}
 	}
-	get hasInvestment(){ // recursively check for investment among children
-		return (
-			this.hasConnections(/FDI/)
-			|| this.children.some( child => child.hasInvestment )
-		)
-	}
 	get investmentPartners(){ // direct only
 		return new Set(
 			this.connections(/FDI/)
@@ -177,9 +161,6 @@ export class Jurisdiction {
 	}
 	setPopulation(population){
 		this.#population = Number(population)
-	}
-	get population(){
-		return this.#population // may well be undefined
 	}
 	get country(){
 		let jur = this
@@ -200,28 +181,6 @@ export class Jurisdiction {
 	get descendants(){
 		return this.children.map(child=>[child,...child.descendants]).flat()
 	}
-	get isCountry(){
-		return this === this.country
-	}
-	get canadian(){
-		return this.country.geo_id == 2
-	}
-	get twins(){
-		return this.connections(/Twinning/)
-			.map( twinning => twinning.partnerOf(this) )
-	}
-	get twinsRecursive(){
-		return [
-			...this.twins,
-			...this.children.map(c=>c.twinsRecursive).flat() 
-		]
-	}
-	get twinPairsRecursive(){
-		return [
-			...this.twins.map(twin=>[this,twin]),
-			...this.children.map(child=>child.twinPairsRecursive).flat() 
-		]
-	}
 	get boundary(){
 		return this.geom?.polygon ?? this.geom?.point
 	}
@@ -239,15 +198,9 @@ export class Jurisdiction {
 		this.queryStatus.boundary = 2
 		delete this._boundaryPromise
 	}
-	get children(){
-		return [...this.#children]
-	}
 	get node(){
 		if(!this.#node){ this.#node = new Node(this) }
 		return this.#node
-	}
-	get depth(){
-		return this.ancestors.length
 	}
 	// returns a promise resolving to this jurisdiction with geometry available
 	withGeom(type){

@@ -44,9 +44,8 @@ test('Find multiple jurisdictions',() => {
 test('Count twins in Hokkaido',() => {
 	const graph = new JurisdictionGraph(staticData);
 	graph.addTwins(twinsData)
-	return graph.lookup('Q1037393').then( jur => {
-		expect(jur instanceof Jurisdiction).toBe(true)
-		expect(jur.twinsRecursive.length).toBe(27)
+	return graph.lookup('Q1037393').then( hokkaido => {
+		expect(hokkaido.connections(/Twinning/,{descendants:true}).length).toBe(27)
 	} )
 } )
 
@@ -60,12 +59,18 @@ test('Find capitals',() => {
 
 test('Count missions from/to Quebec',() => {
 	const graph = new JurisdictionGraph(staticData);
-	expect(graph.lookupNow(18).sendsMissions.length).toBe(0)
+	const quebec = graph.lookupNow(18)
+	expect(quebec.connections(/Mission/).length).toBe(0)
 	graph.addDiplomaticMissions(dipMissions)
+	// this bit is async to run after the missions are added
 	return graph.lookup('18').then( quebec => {
 		expect(quebec.hasConnections(/Mission/)).toBe(true)
-		expect(quebec.sendsMissions.length).toBe(9)
-		expect(quebec.receivesMissions.length).toBe(1)
+		let missionsSent = quebec.connections(/Mission/)
+			.filter( mission => mission.from == quebec )
+		expect(missionsSent.length).toBe(9)
+		let missionsHosted = quebec.connections(/Mission/,{descendants:true})
+			.filter( mission => mission.to.canadian )
+		expect(missionsHosted.length).toBe(1)
 	} )
 } )
 
@@ -73,8 +78,8 @@ test('Count trade agreements with Hong Kong',() => {
 	const graph = new JurisdictionGraph(staticData);
 	graph.addTradeAgreements(tradeAgreements)
 	return graph.lookup(30).then( HK => {
-		expect(HK.tradeAgreements.length).toBe(2)
-		expect(HK.directTradeAgreements.length).toBe(1)
+		expect(HK.connections(/TradeAgreement/,{ancestors:true}).length).toBe(2)
+		expect(HK.connections(/TradeAgreement/).length).toBe(1)
 	} )
 } )
 
@@ -124,7 +129,7 @@ test('IDs are read-only',() => {
 test('Count investments',()=>{
 	const graph = new JurisdictionGraph(staticData);
 	const guangzhou = graph.lookupNow(283)
-	expect(guangzhou.hasInvestment).toBe(true)
+	expect(guangzhou.hasConnections(/FDI/,{descendants:true})).toBe(true)
 	expect(guangzhou.investmentPartners.size).toEqual(8)
 })
 
