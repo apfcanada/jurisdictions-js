@@ -13,17 +13,16 @@ export class Jurisdiction {
 	#children = new Set();
 	#connections = new Map();
 	#borders = new Set();
-	#directBusinessCount = 0;
 	#population;
 	#node;
 	constructor({
 		geo_id,wikidata,osm_id,parent_id,capital_id,
 		names,type,x,y,
-		bizCount,investments,graph
+		investments,graph
 	}){
 		// only two strictly required fields
 		if( parseInt(geo_id) !== geo_id || ( ! /^Q\d+$/.test(wikidata) ) ){ 
-			throw 'error in one of the required inputs' 
+			throw 'invalid geo_id or wikidata ID supplied' 
 		}
 		// set IDs
 		this.#ids.geo_id = geo_id
@@ -43,7 +42,6 @@ export class Jurisdiction {
 
 		this.geom = {}
 		if( x && y ) this.geom.point = { type: 'POINT', coordinates: [x,y] }
-		if(bizCount) this.#directBusinessCount = bizCount;
 		// record query status to prevent retries 0: none, 1: in progress, 2: done 
 		this.queryStatus = { neighbors: 0, population: 0, boundary: 0 }
 		if(graph){ 
@@ -89,11 +87,24 @@ export class Jurisdiction {
 			new FDI(this,partner).notify()
 		} )
 	}
-	get connections(){
+	connections(connectionClass){
+		if( connectionClass instanceof RegExp ){
+			return [...this.#connections.entries()]
+				.filter( ([key,value]) => connectionClass.test(key) )
+				.map( ([key,value]) => value )
+		}
 		return [...this.#connections.values()]
 	}
+	hasConnections(connectionClass){
+		if( connectionClass instanceof RegExp ){
+			return [...this.#connections.keys()]
+				.some( key => connectionClass.test(key) )
+		}
+		console.log(typeof connectionClass)
+		return false
+	}
 	get directTradeAgreements(){
-		return this.connections.filter( conn => conn instanceof TradeAgreement )
+		return this.connections(/TradeAgreement/)
 	}
 	get tradeAgreements(){
 		return [
@@ -102,22 +113,17 @@ export class Jurisdiction {
 		]
 	}
 	get sendsMissions(){
-		return this.connections
-			.filter( conn => conn instanceof Mission )
+		return this.connections(/Mission/)
 			.filter( mission => mission.from == this )
 			.sort((a,b)=>a.to.country.geo_id-b.to.country.geo_id)
 	}
 	get receivesMissions(){
-		let direct = this.connections
-			.filter( conn => conn instanceof Mission )
+		let direct = this.connections(/Mission/)
 			.filter( mission => mission.to == this )
 		return [
 			...direct,
 			...this.children.map(j=>j.receivesMissions).flat()
 		].sort((a,b)=>a.from.country.geo_id-b.from.country.geo_id)
-	}
-	get hasDiplomacy(){
-		return this.sendsMissions.length + this.receivesMissions.length > 0
 	}
 	get connectionPoints(){ // TODO think through these arbitrary weights
 		return ( 
@@ -159,13 +165,13 @@ export class Jurisdiction {
 	}
 	get hasInvestment(){ // recursively check for investment among children
 		return (
-			this.connections.some( conn => conn instanceof FDI )
+			this.hasConnections(/FDI/)
 			|| this.children.some( child => child.hasInvestment )
 		)
 	}
 	get investmentPartners(){ // direct only
 		return new Set(
-			this.connections.filter( conn => conn instanceof FDI )
+			this.connections(/FDI/)
 				.map( inv => inv.from == this ? inv.to : inv.from )
 		)
 	}
@@ -201,7 +207,7 @@ export class Jurisdiction {
 		return this.country.geo_id == 2
 	}
 	get twins(){
-		return this.connections.filter( conn => conn instanceof Twinning )
+		return this.connections(/Twinning/)
 			.map( twinning => twinning.partnerOf(this) )
 	}
 	get twinsRecursive(){
@@ -215,13 +221,6 @@ export class Jurisdiction {
 			...this.twins.map(twin=>[this,twin]),
 			...this.children.map(child=>child.twinPairsRecursive).flat() 
 		]
-	}
-	get hasTwins(){
-		return this.twins.length > 0
-	}
-	get businessCount(){
-		return [this,...this.descendants]
-			.reduce( (sum,j) => sum + j.#directBusinessCount, 0 )
 	}
 	get boundary(){
 		return this.geom?.polygon ?? this.geom?.point

@@ -5,7 +5,7 @@ export class Twinning extends Connection {
 		super(A,B)
 	}
 	get id(){
-		return `twinning:${super.id}`
+		return `${this.constructor.name}:${super.id}`
 	}
 	partnerOf(refJur){
 		return this.jurisdictions.find( jur => jur != refJur )

@@ -7,7 +7,7 @@ export class Mission extends DirectedConnection {
 		this.#data = missionData // direct from wikidata
 	}
 	get id(){
-		return `mission:${super.id}/${this.#data.missionID}`
+		return `${this.constructor.name}:${super.id}/${this.#data.missionID}`
 	}
 	get type(){
 		return this.#data.typeLabels

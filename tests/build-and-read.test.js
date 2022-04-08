@@ -63,7 +63,7 @@ test('Count missions from/to Quebec',() => {
 	expect(graph.lookupNow(18).sendsMissions.length).toBe(0)
 	graph.addDiplomaticMissions(dipMissions)
 	return graph.lookup('18').then( quebec => {
-		expect(quebec.hasDiplomacy).toBe(true)
+		expect(quebec.hasConnections(/Mission/)).toBe(true)
 		expect(quebec.sendsMissions.length).toBe(9)
 		expect(quebec.receivesMissions.length).toBe(1)
 	} )

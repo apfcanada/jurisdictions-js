@@ -7,7 +7,7 @@ export class TradeAgreement extends Connection {
 		this.#data = data
 	}
 	get id(){
-		return `tradeAgreement:${super.id}`
+		return `${this.constructor.name}:${super.id}`
 	}
 	get name(){
 		return this.#data.agreementLabel

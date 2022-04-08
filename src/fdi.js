@@ -5,6 +5,6 @@ export class FDI extends DirectedConnection{
 		super(source,target)
 	}
 	get id(){
-		return `FDI:${super.id}`
+		return `${this.constructor.name}:${super.id}`
 	}
 }
