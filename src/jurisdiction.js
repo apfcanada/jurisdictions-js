@@ -4,7 +4,7 @@ import { FDI } from './fdi.js'
 import { TradeAgreement } from './trade-agreement.js'
 
 export class Jurisdiction {
-	#ids = { relations: {}, investments: [] }
+	#ids = { relations: {} }
 	#names = { } // keyed by language code, e.g. 'en','zh','zh_classical'
 	#graph
 	#parent
@@ -15,8 +15,7 @@ export class Jurisdiction {
 	#node;
 	constructor({
 		geo_id,wikidata,osm_id,parent_id,capital_id,
-		names,type,x,y,
-		investments,graph
+		names,type,x,y,graph
 	}){
 		// only two strictly required fields
 		if( parseInt(geo_id) !== geo_id || ( ! /^Q\d+$/.test(wikidata) ) ){ 
@@ -28,7 +27,6 @@ export class Jurisdiction {
 		this.#ids.osm = osm_id
 		if(parent_id) this.#ids.relations.parent = parent_id; 
 		if(capital_id) this.#ids.relations.capital = capital_id;
-		if(investments) this.#ids.investments = investments
 		
 		Object.entries( names ?? {} ).map( ( [ key, name ] ) => {
 			if( /^[a-z]{2}$/.test(key) && typeof name == 'string' ){
@@ -85,10 +83,6 @@ export class Jurisdiction {
 			this.capital = lookup(this.#ids.relations.capital)
 			this.capital.administer(this)
 		}
-		this.#ids.investments.map( dst_geo_id => {
-			const partner = lookup(dst_geo_id)
-			new FDI(this,partner).notify()
-		} )
 	}
 	connections(connectionClass,recurseOptions={}){
 		const { ancestors, descendants } = recurseOptions
@@ -141,12 +135,6 @@ export class Jurisdiction {
 		}else{
 			return this.#borders.has(jur)
 		}
-	}
-	get investmentPartners(){ // direct only
-		return new Set(
-			this.connections(/FDI/)
-				.map( inv => inv.from == this ? inv.to : inv.from )
-		)
 	}
 	setPopulation(population){
 		this.#population = Number(population)

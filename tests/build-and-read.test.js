@@ -126,14 +126,7 @@ test('IDs are read-only',() => {
 	} )
 })
 
-test('Count investments',()=>{
-	const graph = new JurisdictionGraph(staticData);
-	const guangzhou = graph.lookupNow(283)
-	expect(guangzhou.hasConnections(/FDI/,{descendants:true})).toBe(true)
-	expect(guangzhou.investmentPartners.size).toEqual(8)
-})
-
 test('Knows of jurisdiction Types',()=>{
 	const graph = new JurisdictionGraph(staticData);
-	expect(graph.jurisdictionTypes.length).toBe(40)
+	expect(graph.jurisdictionTypes.length).toBe(41)
 })

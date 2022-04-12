@@ -122,7 +122,6 @@ function buildHierarchy(data,phonebook,graph){
 			capital_id: jurdata?.c,
 			names: { en: jurdata.n },
 			type: data.types.find(type=>jurdata.t==type.uid).label,
-			investments: jurdata?.i,
 			x: jurdata?.x,
 			y: jurdata?.y
 		})
