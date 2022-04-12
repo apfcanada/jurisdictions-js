@@ -3,9 +3,11 @@ The `JurisdictionsGraph` class helps to define a data structure relating a set o
 
 From this parent->child tree structure we get the concepts of `ancestors` and `descendants` belonging to a jurisdiction. As each full tree is separately sovereign, any connections between trees are "international", connections within a tree "domestic".
 
-"Connections", specifically instances of the `Connection` class can be any of these, with more specific classes extending these to specifically Canada<->Asia connections, directed connections with a distinct 'from' and 'to', and so on. 
+"Connections", specifically instances/extensions of the `Connection` class can be any of these, with more specific classes extending these to specifically Canada<->Asia connections, directed connections with a distinct 'from' and 'to', and so on. 
 
 The connections between jurisdictions end up forming a big tangled graph and the `JurisdictionGraph` class then serves as a container for that mess and a way of accessing some of its basic properties like the list of all jurisdictions, or all countries, etc without having to do a lot of traversals from one jurisdiction to all the rest. Nevermind the strong  possibility of disconnected subgraphs. 
+
+Perhaps most importantly it tracks what data is cached in / built-into the graph at any given moment. For example we have to know if the graph is ready for a lookup or if we need to wait for the basic structure to be retrived from the API and built. Many methods realy on this ready-state and so we offer both synchronous and async alternatives for use depending on the context. 
 
 # Defining new connections
 
