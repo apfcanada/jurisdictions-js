@@ -1,4 +1,4 @@
-import { Connection } from './connection.js'
+import { Connection } from '../../src'
 
 export class TradeAgreement extends Connection {
 	#data

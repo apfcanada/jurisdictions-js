@@ -1,4 +1,4 @@
-import { Connection } from './connection.js'
+import { Connection } from '../../src'
 
 export class Twinning extends Connection {
 	constructor(A,B){

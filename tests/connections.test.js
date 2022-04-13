@@ -1,9 +1,5 @@
-import { 
-	JurisdictionGraph,
-	Connection,
-	DirectedConnection,
-	Business
-} from '../src/'
+import { JurisdictionGraph, Connection, DirectedConnection } from '../src/'
+import { Business } from './connections/Business'
 import staticData from './staticGraphData.json'
 
 test('Can create and validate general connections',() => {
@@ -28,7 +24,7 @@ test('Can create and validate directed connections',() => {
 	expect(()=>new DirectedConnection(toronto)).toThrow()
 } )
 
-test('Creates and reads businesses',() => {
+test('Creates and reads Business connections',() => {
 	const graph = new JurisdictionGraph(staticData);
 	const [toronto,beijing,ottawa] = graph.lookupNow([10,111,21])
 	let biz = new Business(toronto,beijing,{uid:1}).notify()

@@ -33,5 +33,5 @@ test('Add child jurisdiction',() => {
 test('Build empty graph, find nothing in it',() => {
 	const graph = new JurisdictionGraph({jurisdictions:[],types:[]});
 	expect(graph.lookupNow(1)).toBeUndefined()
-	expect(graph.lookupNow([1]).length).toBe(0)
+	expect(graph.allJurisdictionsNow.length).toBe(0)
 } )

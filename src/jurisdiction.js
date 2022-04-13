@@ -1,7 +1,5 @@
 import { assignBoundaries } from './fetchGeoms.js'
 import { Node } from './node.js'
-import { FDI } from './fdi.js'
-import { TradeAgreement } from './trade-agreement.js'
 
 export class Jurisdiction {
 	#ids = { relations: {} }

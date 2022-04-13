@@ -1,1 +1,28 @@
-[{"id":"Q181574","agreementLabel":"North American Free Trade Agreement","signatories":"Q16,Q30,Q96"},{"id":"Q1121969","agreementLabel":"Comprehensive Economic and Trade Agreement","signatories":"Q16,Q458"},{"id":"Q5029558","agreementLabel":"Canada–Costa Rica Free Trade Agreement","signatories":"Q16,Q800","year":"2002"},{"id":"Q5029560","agreementLabel":"Canada–Colombia Free Trade Agreement","signatories":"Q16,Q739"},{"id":"Q5029563","agreementLabel":"Canada–Chile Free Trade Agreement","signatories":"Q16,Q298"},{"id":"Q16955213","agreementLabel":"Canada–Korea Free Trade Agreement","signatories":"Q16,Q884","year":"2015"},{"id":"Q48807070","agreementLabel":"Canada–China Foreign Investment Protection Agreement","signatories":"Q16,Q148","year":"2014"},{"id":"Q48852287","agreementLabel":"Comprehensive and Progressive Agreement for Trans-Pacific Partnership","signatories":"Q16,Q17,Q96,Q298,Q334,Q408,Q419,Q664,Q833,Q881,Q921","year":"2018"},{"id":"Q56839716","agreementLabel":"United States–Mexico–Canada Agreement","signatories":"Q16,Q30,Q96"},{"id":"Q108574202","agreementLabel":"Canada - Hong Kong Foreign Investment Promotion and Protection Agreement","signatories":"Q16,Q8646","year":"2016"},{"id":"Q108574270","agreementLabel":"Canada-Mongolia Foreign Investment Promotion and Protection Agreement","signatories":"Q16,Q711","year":"2017"}]
+[
+	{
+		"id":"Q16955213",
+		"agreementLabel":"Canada–Korea Free Trade Agreement",
+		"signatories":"Q16,Q884",
+		"year":"2015"
+	},{
+		"id":"Q48807070",
+		"agreementLabel":"Canada–China Foreign Investment Protection Agreement",
+		"signatories":"Q16,Q148",
+		"year":"2014"
+	},{
+		"id":"Q48852287",
+		"agreementLabel":"Comprehensive and Progressive Agreement for Trans-Pacific Partnership",
+		"signatories":"Q16,Q17,Q96,Q298,Q334,Q408,Q419,Q664,Q833,Q881,Q921",
+		"year":"2018"
+	},{
+		"id":"Q108574202",
+		"agreementLabel":"Canada - Hong Kong Foreign Investment Promotion and Protection Agreement",
+		"signatories":"Q16,Q8646",
+		"year":"2016"
+	},{
+		"id":"Q108574270",
+		"agreementLabel":"Canada-Mongolia Foreign Investment Promotion and Protection Agreement",
+		"signatories":"Q16,Q711",
+		"year":"2017"
+	}
+]

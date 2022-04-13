@@ -1,8 +1,13 @@
 import { JurisdictionGraph, Jurisdiction } from '../src/'
 import staticData from './staticGraphData.json'
+
+import { Twinning } from './connections/twinning.js'
 import twinsData from './twinning-data.json'
+import { Mission } from './connections/mission.js'
 import dipMissions from './missions.json'
+import { TradeAgreement } from './connections/trade-agreement.js'
 import tradeAgreements from './canada-trade-agreements.json'
+
 
 test('Build full graph without errors',() => {
 	const graph = new JurisdictionGraph(staticData);
@@ -43,7 +48,10 @@ test('Find multiple jurisdictions',() => {
 
 test('Count twins in Hokkaido',() => {
 	const graph = new JurisdictionGraph(staticData);
-	graph.addTwins(twinsData)
+	twinsData.map( pair => {
+		let [A,B] = graph.lookupNow([pair.a,pair.b])
+		new Twinning(A,B).notify()
+	} )
 	return graph.lookup('Q1037393').then( hokkaido => {
 		expect(hokkaido.connections(/Twinning/,{descendants:true}).length).toBe(27)
 	} )
@@ -61,7 +69,17 @@ test('Count missions from/to Quebec',() => {
 	const graph = new JurisdictionGraph(staticData);
 	const quebec = graph.lookupNow(18)
 	expect(quebec.connections(/Mission/).length).toBe(0)
-	graph.addDiplomaticMissions(dipMissions)
+	
+	dipMissions.map( missionData => {
+		let operator = graph.lookupNow(missionData.operatorID)
+		let destination = graph.lookupNow(missionData.destID)
+		if(! operator || ! destination ){
+			return console.warn( `Mission ${missionData.missionID} missing at least one of these jurisdictions`,
+				missionData.operatorID, missionData.destID )
+		}
+		new Mission({operator,destination,missionData}).notify()
+	} )
+
 	// this bit is async to run after the missions are added
 	return graph.lookup('18').then( quebec => {
 		expect(quebec.hasConnections(/Mission/)).toBe(true)
@@ -76,7 +94,11 @@ test('Count missions from/to Quebec',() => {
 
 test('Count trade agreements with Hong Kong',() => {
 	const graph = new JurisdictionGraph(staticData);
-	graph.addTradeAgreements(tradeAgreements)
+	tradeAgreements.map( agreement => {
+		let { signatories, ...data } = agreement 
+		let jurs = signatories.split(',').map(graph.lookupNow).filter(j=>j)
+		new TradeAgreement(data,...jurs).notify()
+	} )
 	return graph.lookup(30).then( HK => {
 		expect(HK.connections(/TradeAgreement/,{ancestors:true}).length).toBe(2)
 		expect(HK.connections(/TradeAgreement/).length).toBe(1)

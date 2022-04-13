@@ -1,4 +1,4 @@
-import { DirectedConnection } from './connection.js'
+import { DirectedConnection } from '../../src'
 
 export class Business extends DirectedConnection{
 	#data
