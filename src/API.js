@@ -4,4 +4,4 @@ const pgapi = `${site}/pgapi/public`
 
 export const topoGeometry =    `${pgapi}/jurisdictionGeometryTopo.php`
 export const succinctSearch =  `${pgapi}/succinctSearch.php`
-export const graph =           `${pgapi}/graphData.php`
+export const graph =           `${pgapi}/graphDataV4.php`
