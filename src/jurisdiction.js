@@ -7,13 +7,16 @@ export class Jurisdiction {
 	#graph
 	#parent
 	#children = new Set();
+	#administers
+	#capital
 	#connections = new Map();
 	#borders = new Set();
 	#population;
 	#node;
 	constructor({
-		geo_id,wikidata,osm_id,parent_id,capital_id,
-		names,type,x,y,graph
+		geo_id, wikidata, osm_id,
+		parent_id, capital_id,
+		names, type, x, y, graph
 	}){
 		// only two strictly required fields
 		if( parseInt(geo_id) !== geo_id || ( ! /^Q\d+$/.test(wikidata) ) ){ 
@@ -54,6 +57,8 @@ export class Jurisdiction {
 	get isCountry(){ return this === this.country }
 	get canadian(){ return this.country.geo_id == 2 }
 	get depth(){ return this.ancestors.length }
+	get capital(){ return this.#capital }
+	get administers(){ return this.#administers }
 	
 	notifyOfConnection(connection){
 		// will just overwrite if given the same connection.id again
@@ -78,8 +83,8 @@ export class Jurisdiction {
 			this.#parent.acceptChild(this)
 		}
 		if(this.#ids.relations?.capital){
-			this.capital = lookup(this.#ids.relations.capital)
-			this.capital.administer(this)
+			this.#capital = lookup(this.#ids.relations.capital)
+			this.#capital.administer(this)
 		}
 	}
 	connections(connectionClass,recurseOptions={}){
@@ -119,7 +124,7 @@ export class Jurisdiction {
 		this.shareNetworks(parent)
 	}
 	administer(jur){
-		this.administers = jur
+		this.#administers = jur
 	}
 	borderWith(neighbor){
 		if(!this.#borders.has(neighbor)){
