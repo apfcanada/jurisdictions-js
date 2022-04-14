@@ -4,6 +4,7 @@ import { Jurisdiction } from './jurisdiction.js'
 export class JurisdictionGraph{
 	#jurisdictionTypes
 	#phonebook = new Map()
+	#callbacks = new Map()
 	constructor(data){
 		this.lookup = this.lookup.bind(this)
 		this.lookupNow = this.lookupNow.bind(this)
@@ -17,6 +18,17 @@ export class JurisdictionGraph{
 			} )
 		}
 		return this
+	}
+	addCallback(key,func){ 
+		this.#callbacks.set(key,func)
+		return this
+	}
+	async readyWith(...callBackKeys){
+		await this.ready
+		const results = callBackKeys.map( key => {
+			if(this.#callbacks.has(key)) return this.#callbacks.get(key)(this)
+		} ) 
+		return Promise.all(results).then(whatever=>this)
 	}
 	// id can/should be either a wikidataID (string) or a geo_id (number)
 	// or an array of such

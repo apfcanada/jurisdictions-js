@@ -1,13 +1,35 @@
 import { JurisdictionGraph, Jurisdiction } from '../src/'
 import staticData from './staticGraphData.json'
-
 import { Twinning } from './connections/twinning.js'
 import twinsData from './twinning-data.json'
+function addTwins(graph){
+	twinsData.map( pair => {
+		let [A,B] = graph.lookupNow([pair.a,pair.b])
+		new Twinning(A,B).notify()
+	} )
+}
 import { Mission } from './connections/mission.js'
 import dipMissions from './missions.json'
+function addMissions(graph){
+	dipMissions.map( missionData => {
+		let operator = graph.lookupNow(missionData.operatorID)
+		let destination = graph.lookupNow(missionData.destID)
+		if(! operator || ! destination ){
+			return console.warn( `Mission ${missionData.missionID} missing at least one of these jurisdictions`,
+				missionData.operatorID, missionData.destID )
+		}
+		new Mission({operator,destination,missionData}).notify()
+	} )
+}
 import { TradeAgreement } from './connections/trade-agreement.js'
 import tradeAgreements from './canada-trade-agreements.json'
-
+function addAgreements(graph){
+	tradeAgreements.map( agreement => {
+		let { signatories, ...data } = agreement 
+		let jurs = signatories.split(',').map(graph.lookupNow).filter(j=>j)
+		new TradeAgreement(data,...jurs).notify()
+	} )
+}
 
 test('Build full graph without errors',() => {
 	const graph = new JurisdictionGraph(staticData);
@@ -48,11 +70,9 @@ test('Find multiple jurisdictions',() => {
 
 test('Count twins in Hokkaido',() => {
 	const graph = new JurisdictionGraph(staticData);
-	twinsData.map( pair => {
-		let [A,B] = graph.lookupNow([pair.a,pair.b])
-		new Twinning(A,B).notify()
-	} )
-	return graph.lookup('Q1037393').then( hokkaido => {
+	graph.addCallback('twins',addTwins)
+	return graph.readyWith('twins').then( graph => {
+		let hokkaido = graph.lookupNow('Q1037393')
 		expect(hokkaido.connections(/Twinning/,{descendants:true}).length).toBe(27)
 	} )
 } )
@@ -69,19 +89,9 @@ test('Count missions from/to Quebec',() => {
 	const graph = new JurisdictionGraph(staticData);
 	const quebec = graph.lookupNow(18)
 	expect(quebec.connections(/Mission/).length).toBe(0)
-	
-	dipMissions.map( missionData => {
-		let operator = graph.lookupNow(missionData.operatorID)
-		let destination = graph.lookupNow(missionData.destID)
-		if(! operator || ! destination ){
-			return console.warn( `Mission ${missionData.missionID} missing at least one of these jurisdictions`,
-				missionData.operatorID, missionData.destID )
-		}
-		new Mission({operator,destination,missionData}).notify()
-	} )
-
-	// this bit is async to run after the missions are added
-	return graph.lookup('18').then( quebec => {
+	graph.addCallback('missions',addMissions)
+	return graph.readyWith('missions').then( graph => {
+		const quebec = graph.lookupNow('18')
 		expect(quebec.hasConnections(/Mission/)).toBe(true)
 		let missionsSent = quebec.connections(/Mission/)
 			.filter( mission => mission.from == quebec )
@@ -94,12 +104,9 @@ test('Count missions from/to Quebec',() => {
 
 test('Count trade agreements with Hong Kong',() => {
 	const graph = new JurisdictionGraph(staticData);
-	tradeAgreements.map( agreement => {
-		let { signatories, ...data } = agreement 
-		let jurs = signatories.split(',').map(graph.lookupNow).filter(j=>j)
-		new TradeAgreement(data,...jurs).notify()
-	} )
-	return graph.lookup(30).then( HK => {
+	graph.addCallback('trade',addAgreements)
+	return graph.readyWith('trade').then(graph => {
+		let HK = graph.lookupNow(30)
 		expect(HK.connections(/TradeAgreement/,{ancestors:true}).length).toBe(2)
 		expect(HK.connections(/TradeAgreement/).length).toBe(1)
 	} )
