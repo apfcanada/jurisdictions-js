@@ -26,8 +26,13 @@ export class JurisdictionGraph{
 	async readyWith(...callBackKeys){
 		await this.ready
 		const results = callBackKeys.map( key => {
-			if(this.#callbacks.has(key)) return this.#callbacks.get(key)(this)
-		} ) 
+			if(this.#callbacks.has(key)){
+				const result = this.#callbacks.get(key)(this)
+				this.#callbacks.delete(key)
+				return result
+			}
+		} )
+		
 		return Promise.all(results).then(whatever=>this)
 	}
 	// id can/should be either a wikidataID (string) or a geo_id (number)
