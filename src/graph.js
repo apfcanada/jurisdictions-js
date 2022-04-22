@@ -27,12 +27,13 @@ export class JurisdictionGraph{
 		await this.ready
 		const results = callBackKeys.map( key => {
 			if(this.#callbacks.has(key)){
-				const result = this.#callbacks.get(key)(this)
-				this.#callbacks.delete(key)
-				return result
+				const callback = this.#callbacks.get(key)
+				if(typeof callback === 'function'){
+					this.#callbacks.set(key,callback(this))
+				}
+				return this.#callbacks.get(key)
 			}
 		} )
-		
 		return Promise.all(results).then(whatever=>this)
 	}
 	// id can/should be either a wikidataID (string) or a geo_id (number)

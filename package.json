@@ -1,6 +1,6 @@
 {
   "name": "jurisdictions",
-  "version": "4.1.1",
+  "version": "4.1.2",
   "description": "access the public jurisdictions database from the Asia Pacific Foundation of Canada",
   "main": "src/index.js",
   "scripts": {
