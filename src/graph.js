@@ -26,7 +26,7 @@ export class JurisdictionGraph{
 	async readyWith(...callBackKeys){
 		await this.ready
 		const results = callBackKeys.map( key => {
-			if(this.#callbacks.has(key)){
+			if( this.#callbacks.has(key) || callbackKeys.includes('*') ){
 				const callback = this.#callbacks.get(key)
 				if(typeof callback === 'function'){
 					this.#callbacks.set(key,callback(this))
