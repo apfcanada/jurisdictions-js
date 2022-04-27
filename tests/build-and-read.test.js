@@ -85,6 +85,15 @@ test('Find capitals',() => {
 	} )
 } )
 
+test('Can use RegExp callback',() => {
+	const graph = new JurisdictionGraph(staticData);
+	graph.addCallback('missions',addMissions)
+	return graph.readyWith(/./).then( graph => {
+		const quebec = graph.lookupNow(18)
+		expect(quebec.hasConnections(/Mission/)).toBe(true)
+	} )
+} )
+
 test('Count missions from/to Quebec',() => {
 	const graph = new JurisdictionGraph(staticData);
 	const quebec = graph.lookupNow(18)
