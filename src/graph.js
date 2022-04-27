@@ -38,14 +38,9 @@ export class JurisdictionGraph{
 		const results = callBackKeys.map( key => this.#fireCallback(key) )
 		// then look for patterns
 		callBackKeys.filter( key => key instanceof RegExp ).forEach( re => {
-			console.log(re,[...this.#callbacks.keys()]);
-			
 			[...this.#callbacks.keys()]
-				.filter( key => (key instanceof String) && re.test(key) )
-				.forEach( key => {
-					console.log('hello')
-					results.push(this.#fireCallback(key))
-				} )
+				.filter( key => (typeof key == 'string') && re.test(key) )
+				.forEach( key => results.push(this.#fireCallback(key)) )
 		} )
 		return Promise.all([...results]).then(whatever=>this)
 	}
