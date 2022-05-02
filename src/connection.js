@@ -1,6 +1,7 @@
 // this is a highly abstract class for undirected connections between two or 
 // more jurisdictions
 export class Connection {
+	#type = 'Connection'
 	#jurs
 	constructor(...jurs){
 		// validate inputs
@@ -14,7 +15,7 @@ export class Connection {
 		this.#jurs = jurs
 	}
 	get id(){ // unique to this set of jurisdictions
-		return this.#jurs.map(j=>j.geo_id).sort((a,b)=>b-a).join('|')
+		return `${this.#type}:` + this.#jurs.map(j=>j.geo_id).sort((a,b)=>b-a).join('|')
 	}
 	notify(){
 		this.#jurs.forEach( jur => jur.notifyOfConnection(this) )
@@ -26,6 +27,7 @@ export class Connection {
 
 // for directed connections between two jurisdictions
 export class DirectedConnection extends Connection{
+	#type = 'DirectedConnection'
 	#to
 	#from
 	constructor(source,target){
@@ -34,7 +36,7 @@ export class DirectedConnection extends Connection{
 		this.#to = target
 	}
 	get id(){
-		return `${this.#from.geo_id}->${this.#to.geo_id}`
+		return `${this.#type}:${this.#from.geo_id}->${this.#to.geo_id}`
 	}
 	get from(){
 		return this.#from

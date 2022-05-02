@@ -1,6 +1,7 @@
 import { DirectedConnection } from '../../src'
 
 export class Business extends DirectedConnection{
+	#type = 'Business'
 	#data
 	constructor(source,target,data){
 		super(source,target)
@@ -10,6 +11,6 @@ export class Business extends DirectedConnection{
 		return this.#data.uid
 	}
 	get id(){
-		return `${this.constructor.name}:${this.businessId}`
+		return `${this.#type}:${this.businessId}`
 	}
 }
