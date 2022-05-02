@@ -19,22 +19,30 @@ export class JurisdictionGraph{
 		}
 		return this
 	}
-	addCallback(key,func){ 
+	addCallback(key,func){
 		this.#callbacks.set(key,func)
 		return this
 	}
+	#fireCallback(key){
+		if(this.#callbacks.has(key)){
+			const callback = this.#callbacks.get(key)
+			if(typeof callback === 'function'){ // not a promise/result yet
+				this.#callbacks.set(key,callback(this))
+			}
+			return this.#callbacks.get(key)
+		}
+	}
 	async readyWith(...callBackKeys){
 		await this.ready
-		const results = callBackKeys.map( key => {
-			if( this.#callbacks.has(key) || callbackKeys.includes('*') ){
-				const callback = this.#callbacks.get(key)
-				if(typeof callback === 'function'){
-					this.#callbacks.set(key,callback(this))
-				}
-				return this.#callbacks.get(key)
-			}
+		// exact matches first
+		const results = callBackKeys.map( key => this.#fireCallback(key) )
+		// then look for patterns
+		callBackKeys.filter( key => key instanceof RegExp ).forEach( re => {
+			[...this.#callbacks.keys()]
+				.filter( key => (typeof key == 'string') && re.test(key) )
+				.forEach( key => results.push(this.#fireCallback(key)) )
 		} )
-		return Promise.all(results).then(whatever=>this)
+		return Promise.all([...results]).then(whatever=>this)
 	}
 	// id can/should be either a wikidataID (string) or a geo_id (number)
 	// or an array of such
