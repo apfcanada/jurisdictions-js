@@ -161,6 +161,13 @@ export class Jurisdiction {
 	get descendants(){
 		return this.children.map(child=>[child,...child.descendants]).flat()
 	}
+	inLineWith(jur){ // is ancestor / descendant of jurisdiction?
+		return (
+			this === jur
+			|| this.ancestors.includes(jur)
+			|| jur.ancestors.includes(this)
+		)
+	}
 	get boundary(){
 		return this.geom?.polygon ?? this.geom?.point
 	}

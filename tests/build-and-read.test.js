@@ -155,6 +155,19 @@ test('Find siblings',() => {
 	} )
 })
 
+test('Test .inLineWith() ancestry and descent check',() => {
+	const graph = new JurisdictionGraph(staticData);
+	const [japan,toronto,ontario,ottawa] = graph.lookupNow([4,10,9,21])
+	expect(ontario.inLineWith(toronto)).toBe(true)
+	japan.descendants.forEach( d => {
+		expect(japan.inLineWith(d)).toBe(true)
+	} )
+	expect(toronto.inLineWith(ottawa)).toBe(false)
+	ontario.siblings.forEach( sib => {
+		expect(ontario.inLineWith(sib)).toBe(false)
+	} )
+})
+
 test('IDs are read-only',() => {
 	const graph = new JurisdictionGraph(staticData);
 	return graph.lookup(2).then( canada => {
