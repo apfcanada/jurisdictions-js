@@ -1,5 +1,5 @@
 {
-  "name": "jurisdictions",
+  "name": "@apfcanada/jurisdictions",
   "version": "4.3.0",
   "description": "access the public jurisdictions database from the Asia Pacific Foundation of Canada",
   "main": "src/index.js",
