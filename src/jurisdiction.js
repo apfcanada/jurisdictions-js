@@ -38,7 +38,7 @@ export class Jurisdiction {
 		this.type = { label: { en: type } }
 
 		this.geom = {}
-		if( x && y ) this.geom.point = { type: 'POINT', coordinates: [x,y] }
+		if( x && y ) this.geom.point = { type: 'Point', coordinates: [x,y] }
 		// record query status to prevent retries 0: none, 1: in progress, 2: done 
 		this.queryStatus = { neighbors: 0, population: 0, boundary: 0 }
 		if(graph){ 
