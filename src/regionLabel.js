@@ -1,6 +1,7 @@
 // note that geo_id's are hardcoded
 
 export function regionLabel(jurs){
+	if( jurs.length == 0 ) return;
 	let countries = new Set(jurs.map(j=>j.country))
 	if( countries.size == 1 ){
 		let country = [...countries][0]
