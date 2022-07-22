@@ -1,46 +1,29 @@
-import { Jurisdiction } from './jurisdiction' 
-
 export class Node{
-	// reserved:
-	// .x, .y, .fx, .fy, .cx, .cy, ...etc
-	constructor(data){
-		if(data instanceof Jurisdiction){
-			this.jur = data
-		}else{
-			console.warn( 'only jurisdictions can be nodes, passed:', data )
-		}
+	// reserved for simulation
+	// .x, .y, .fx, .fy, .vx, .vy
+	#jur
+	#radius = 6
+	#focused = false
+	constructor(jurisdiction){
+		this.#jur = jurisdiction
 	}
-	get id(){
-		return this.jur.geo_id
-	}
-	get title(){
-		return this.jur.name.en;
-	}
-	get radius(){
-		return this?._radius ?? 6
-	}
+	get jur(){ return this.#jur }
+	get id(){ return this.#jur.geo_id }
+	get title(){ return this.#jur.name.en; }
+	get radius(){ return this.#radius }
+	get size(){ return this.#jur.population }
+	get focused(){ return this.#focused }
+	get label(){ return this.#jur.name.en }
 	setRadius(val){
-		this._radius = val
-	}
-	get size(){
-		return this.jur.population
-	}
-	get focused(){
-		return this._focused
-	}
+		this.#radius = Number(val)
+	}	
 	focus(val){
-		this._focused = Boolean(val)
-	}
-	get label(){
-		return this.jur.name.en
-	}
-	get href(){
-		return `/jurisdiction/${this.jur.geo_id}`
+		this.#focused = Boolean(val)
 	}
 	get classes(){
 		const classNames = new Set(['jurisdiction']);
 		if(this.focused) classNames.add('focused')
-		classNames.add( this.jur.canadian ? 'canadian' : 'asian' )
+		classNames.add( this.#jur.canadian ? 'canadian' : 'asian' )
 		return [...classNames]
 	}
 }
