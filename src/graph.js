@@ -61,8 +61,6 @@ export class JurisdictionGraph{
 			}else if( /^Q\d+$/.test(input) ){
 				return this.#phonebook.get(input)
 			}
-		}else{
-			throw new Error(`${input} (${typeof input}) is not an accepted jur ID`)
 		}
 	}
 	know(jur){
