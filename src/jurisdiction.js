@@ -1,5 +1,4 @@
 import { assignBoundaries } from './fetchGeoms.js'
-import { Node } from './node.js'
 
 export class Jurisdiction {
 	#ids = { relations: {} }
@@ -12,7 +11,6 @@ export class Jurisdiction {
 	#connections = new Map();
 	#borders = new Set();
 	#population;
-	#node;
 	constructor({
 		geo_id, wikidata, osm_id,
 		parent_id, capital_id,
@@ -184,10 +182,6 @@ export class Jurisdiction {
 		}
 		this.queryStatus.boundary = 2
 		delete this._boundaryPromise
-	}
-	get node(){
-		if(!this.#node){ this.#node = new Node(this) }
-		return this.#node
 	}
 	// returns a promise resolving to this jurisdiction with geometry available
 	withGeom(type){
