@@ -19,16 +19,16 @@ Here is a simple example:
 import { DirectedConnection } from '@apfcanada/jurisdictions'
 
 class Business extends DirectedConnection{
-	#data
-	constructor(source,target,data){
-		super(source,target)
-		this.#data = data
-	}
-	get businessId(){
-		return this.#data.uid
-	}
-	get id(){
-		return `Business:${this.businessId}:${super.id}`
-	}
+  #data
+  constructor(source,target,data){
+    super(source,target)
+    this.#data = data
+  }
+  get businessId(){
+    return this.#data.uid
+  }
+  get id(){
+    return `Business:${this.businessId}:${super.id}`
+  }
 }
 ```
