@@ -7,10 +7,28 @@ From this parent->child tree structure we get the concepts of `ancestors` and `d
 
 The connections between jurisdictions end up forming a big tangled graph and the `JurisdictionGraph` class then serves as a container for that mess and a way of accessing some of its basic properties like the list of all jurisdictions, or all countries, etc without having to do a lot of traversals from one jurisdiction to all the rest. Nevermind the strong  possibility of disconnected subgraphs. 
 
-Perhaps most importantly it tracks what data is cached in / built-into the graph at any given moment. For example we have to know if the graph is ready for a lookup or if we need to wait for the basic structure to be retrived from the API and built. Many methods realy on this ready-state and so we offer both synchronous and async alternatives for use depending on the context. 
+Perhaps most importantly it tracks what data is cached / built-into the graph at any given moment. For example we have to know if the graph is ready for a lookup or if we need to wait for the basic structure to be retrieved from the API and built. Many methods rely on this ready-state so we offer both synchronous and async alternatives for use depending on the context. 
 
 # Defining new connections
 
 We provide several basic connection types between jurisdictions but leave it up to the implementation to extend and refine these. For instance, we've extended connections to define multilateral trade agreements, borders between jurisdictions, diplomatic missions, twinning relations, businesses, FDI...
 
+Here is a simple example:
 
+```js
+import { DirectedConnection } from '@apfcanada/jurisdictions'
+
+class Business extends DirectedConnection{
+	#data
+	constructor(source,target,data){
+		super(source,target)
+		this.#data = data
+	}
+	get businessId(){
+		return this.#data.uid
+	}
+	get id(){
+		return `Business:${this.businessId}:${super.id}`
+	}
+}
+```
