@@ -32,3 +32,10 @@ class Business extends DirectedConnection{
   }
 }
 ```
+
+# Tests
+Jest unit tests can be run with `npm test`.
+
+# Publication
+There is an automated workflow set up to publish a new version to NPM whenever a commit is pushed to master where the version in `package.json` is incremented. Unit tests will be run first, and publication should only happen if they pass. 
+
